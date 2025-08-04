@@ -32,7 +32,7 @@ A modern, professional learning platform that generates personalized AI-powered 
 - **UI Framework**: Mantine UI v7
 - **Styling**: CSS Custom Properties, Tailwind CSS
 - **Backend**: tRPC, Prisma
-- **Database**: SQLite (development), PostgreSQL (production)
+- **Database**: PostgreSQL (development), PostgreSQL (production)
 - **Authentication**: NextAuth.js with Google OAuth
 - **Deployment**: Vercel (recommended)
 
@@ -65,35 +65,40 @@ A modern, professional learning platform that generates personalized AI-powered 
    
    Configure the following variables:
    ```env
-   # Database
-   DATABASE_URL="file:./dev.db"
-   
+   # Database (PostgreSQL for both development and production)
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/auto_course?schema=public"
+
    # NextAuth.js
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key"
-   
+
    # Google OAuth
    GOOGLE_CLIENT_ID="your-google-client-id"
    GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   
-   # OpenAI (for AI course generation)
-   OPENAI_API_KEY="your-openai-api-key"
+
+   # Google Gemini (for AI course generation)
+   GEMINI_API_KEY="your-gemini-api-key"
    ```
 
-4. **Set up the database**
+4. **Start local database**
+   ```bash
+   ./start-database.sh
+   ```
+
+5. **Set up the database**
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-5. **Start the development server**
+6. **Start the development server**
    ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-6. **Open your browser**
+7. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Project Structure
@@ -110,7 +115,6 @@ pathfinder/
 │   ├── components/            # Reusable components
 │   │   ├── Layout.tsx         # Main layout component
 │   │   ├── ContentRenderer.tsx # Course content renderer
-│   │   ├── LoadingSpinner.tsx # Professional loading states
 │   │   ├── ErrorBoundary.tsx  # Error handling
 │   │   └── EmptyState.tsx     # Empty state components
 │   ├── server/                # Server-side code
@@ -122,6 +126,7 @@ pathfinder/
 │   └── types/                # TypeScript types
 ├── prisma/                   # Database schema
 ├── public/                   # Static assets
+├── start-database.sh         # Local database startup script
 └── package.json
 ```
 
@@ -196,7 +201,7 @@ NEXTAUTH_URL="https://yourdomain.com"
 NEXTAUTH_SECRET="your-production-secret"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
-OPENAI_API_KEY="your-openai-api-key"
+GEMINI_API_KEY="your-gemini-api-key"
 ```
 
 ## 🤝 Contributing
@@ -235,4 +240,4 @@ If you have any questions or need help:
 
 ---
 
-**Built with ❤️ and modern web technologies**
+**EKARSHASUMAJKOTIKALAPOODI**
