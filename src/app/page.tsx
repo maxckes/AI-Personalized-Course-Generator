@@ -24,6 +24,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Layout as AppLayout } from "~/components/Layout";
+import { useTheme } from '~/lib/theme-context';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
@@ -31,6 +32,8 @@ const { Content } = Layout;
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Redirect to dashboard if authenticated
   useEffect(() => {
@@ -48,12 +51,13 @@ export default function Home() {
         justifyContent: 'center',
         flexDirection: 'column',
         gap: 'clamp(12px, 3vw, 16px)',
-        padding: 'clamp(16px, 4vw, 24px)'
+        padding: 'clamp(16px, 4vw, 24px)',
+        backgroundColor: isDark ? '#000000' : '#ffffff'
       }}>
         <Spin size="large" />
         <Text style={{ 
           fontSize: 'clamp(14px, 3vw, 16px)',
-          color: '#6b7280',
+          color: isDark ? '#94a3b8' : '#6b7280',
           textAlign: 'center'
         }}>
           Loading LearnForge AI...
@@ -94,13 +98,15 @@ export default function Home() {
       <div style={{
         height: '100%',
         maxHeight: '100%',
-        background: 'linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%)',
+        background: isDark 
+          ? 'linear-gradient(135deg, #141414 0%, #1f1f1f 100%)'
+          : 'linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%)',
         overflowY: 'auto',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        transition: 'background 0.3s ease'
       }}>
         <Content style={{ 
           padding: 'clamp(16px, 4vw, 48px) clamp(8px, 3vw, 24px)', 
-          maxWidth: '1200px', 
           margin: '0 auto',
           width: '100%',
           minHeight: '100%'
@@ -127,19 +133,23 @@ export default function Home() {
               }}>
                 <BookOutlined style={{ 
                   fontSize: 'clamp(36px, 10vw, 64px)', 
-                  color: '#1c7ed6' 
+                  color: isDark ? '#4dabf7' : '#1c7ed6',
+                  transition: 'color 0.3s ease'
                 }} />
                 <Title
                   level={1}
                   style={{
                     fontSize: 'clamp(2rem, 10vw, 4rem)',
                     lineHeight: 1.1,
-                    background: 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
+                    background: isDark 
+                      ? 'linear-gradient(135deg, #4dabf7 0%, #74c0fc 100%)'
+                      : 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     margin: 0,
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    transition: 'background 0.3s ease'
                   }}
                 >
                   LearnForge AI
@@ -149,12 +159,13 @@ export default function Home() {
               <Title
                 level={2}
                 style={{
-                  color: '#6b7280',
+                  color: isDark ? '#94a3b8' : '#6b7280',
                   fontWeight: 400,
                   lineHeight: 1.3,
                   margin: 0,
                   fontSize: 'clamp(1.25rem, 5vw, 2.25rem)',
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transition: 'color 0.3s ease'
                 }}
               >
                 Your AI-Powered Learning Journey
@@ -163,12 +174,13 @@ export default function Home() {
               <Text
                 style={{
                   fontSize: 'clamp(14px, 4vw, 20px)',
-                  color: '#6b7280',
+                  color: isDark ? '#94a3b8' : '#6b7280',
                   maxWidth: '700px',
                   lineHeight: 1.6,
                   margin: '0 auto',
                   textAlign: 'center',
-                  padding: '0 clamp(8px, 2vw, 16px)'
+                  padding: '0 clamp(8px, 2vw, 16px)',
+                  transition: 'color 0.3s ease'
                 }}
               >
                 Generate personalized AI-powered courses tailored to your learning goals.
@@ -181,7 +193,9 @@ export default function Home() {
                 icon={<GoogleOutlined />}
                 onClick={() => signIn('google')}
                 style={{
-                  background: 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
+                  background: isDark 
+                    ? 'linear-gradient(135deg, #4dabf7 0%, #74c0fc 100%)'
+                    : 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
                   border: 'none',
                   fontSize: 'clamp(14px, 3vw, 18px)',
                   fontWeight: 600,
@@ -193,7 +207,11 @@ export default function Home() {
                   alignItems: 'center',
                   gap: '8px',
                   whiteSpace: 'nowrap',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease',
+                  boxShadow: isDark 
+                    ? '0 4px 12px rgba(77, 171, 247, 0.3)'
+                    : '0 4px 12px rgba(28, 126, 214, 0.3)'
                 }}
               >
                 Get Started with Google
@@ -205,18 +223,23 @@ export default function Home() {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Space direction="vertical" size="middle" style={{ textAlign: 'center' }}>
                 <Badge
-                  count={<RocketOutlined style={{ color: '#1c7ed6' }} />}
-                  style={{ backgroundColor: '#e6f7ff', color: '#1c7ed6' }}
+                  count={<RocketOutlined style={{ color: isDark ? '#4dabf7' : '#1c7ed6' }} />}
+                  style={{ 
+                    backgroundColor: isDark ? '#262626' : '#e6f7ff', 
+                    color: isDark ? '#4dabf7' : '#1c7ed6',
+                    transition: 'all 0.3s ease'
+                  }}
                 >
                   Why Choose LearnForge AI?
                 </Badge>
                 <Title 
                   level={2} 
                   style={{ 
-                    color: 'black', 
+                    color: isDark ? '#ffffffd9' : 'black', 
                     margin: 0,
                     fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    transition: 'color 0.3s ease'
                   }}
                 >
                   Powerful Features for Modern Learning
@@ -228,12 +251,18 @@ export default function Home() {
                   <Col key={index} xs={24} sm={12} lg={6}>
                     <Card
                       bordered
+                      hoverable
                       style={{
                         height: '100%',
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                        borderColor: '#e5e7eb',
-                        transition: 'all 250ms ease-in-out',
-                        borderRadius: 'clamp(8px, 2vw, 12px)'
+                        background: isDark 
+                          ? 'linear-gradient(135deg, #262626 0%, #1f1f1f 100%)'
+                          : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                        borderColor: isDark ? '#434343' : '#e5e7eb',
+                        transition: 'all 0.3s ease',
+                        borderRadius: 'clamp(8px, 2vw, 12px)',
+                        boxShadow: isDark 
+                          ? '0 2px 8px rgba(0, 0, 0, 0.45)'
+                          : '0 2px 8px rgba(0, 0, 0, 0.1)'
                       }}
                     >
                       <Space direction="vertical" size="large" style={{ textAlign: 'center', width: '100%' }}>
@@ -241,13 +270,19 @@ export default function Home() {
                           style={{
                             padding: 'clamp(12px, 3vw, 16px)',
                             borderRadius: 'clamp(8px, 2vw, 12px)',
-                            background: 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
+                            background: isDark 
+                              ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
+                              : 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#1c7ed6',
+                            color: isDark ? '#93c5fd' : '#1c7ed6',
                             minWidth: 'clamp(48px, 8vw, 64px)',
-                            height: 'clamp(48px, 8vw, 64px)'
+                            height: 'clamp(48px, 8vw, 64px)',
+                            transition: 'all 0.3s ease',
+                            boxShadow: isDark 
+                              ? '0 4px 12px rgba(30, 58, 138, 0.3)'
+                              : '0 4px 12px rgba(230, 247, 255, 0.3)'
                           }}
                         >
                           {feature.icon}
@@ -257,20 +292,22 @@ export default function Home() {
                           <Title 
                             level={4} 
                             style={{ 
-                              color: 'black', 
+                              color: isDark ? '#ffffffd9' : 'black', 
                               margin: 0,
                               fontSize: 'clamp(16px, 3vw, 18px)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              transition: 'color 0.3s ease'
                             }}
                           >
                             {feature.title}
                           </Title>
                           <Text 
                             style={{ 
-                              color: '#6b7280', 
+                              color: isDark ? '#94a3b8' : '#6b7280', 
                               lineHeight: 1.6,
                               fontSize: 'clamp(13px, 2.5vw, 14px)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              transition: 'color 0.3s ease'
                             }}
                           >
                             {feature.description}
@@ -286,34 +323,43 @@ export default function Home() {
             {/* CTA Section */}
             <Card
               bordered
+              hoverable
               style={{
-                background: 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
-                borderColor: '#91d5ff',
+                background: isDark 
+                  ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
+                  : 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
+                borderColor: isDark ? '#374151' : '#91d5ff',
                 maxWidth: '700px',
                 width: '100%',
                 margin: '0 auto',
-                borderRadius: 'clamp(12px, 3vw, 16px)'
+                borderRadius: 'clamp(12px, 3vw, 16px)',
+                transition: 'all 0.3s ease',
+                boxShadow: isDark 
+                  ? '0 8px 24px rgba(30, 58, 138, 0.4)'
+                  : '0 8px 24px rgba(230, 247, 255, 0.4)'
               }}
             >
               <Space direction="vertical" size="large" style={{ textAlign: 'center', width: '100%' }}>
                 <Title 
                   level={2} 
                   style={{ 
-                    color: '#1c7ed6', 
+                    color: isDark ? '#93c5fd' : '#1c7ed6', 
                     margin: 0,
                     fontSize: 'clamp(1.5rem, 6vw, 2.25rem)',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    transition: 'color 0.3s ease'
                   }}
                 >
                   Ready to Transform Your Learning?
                 </Title>
                 <Text style={{
                   fontSize: 'clamp(14px, 4vw, 18px)',
-                  color: '#4c4c4c',
+                  color: isDark ? '#94a3b8' : '#4c4c4c',
                   maxWidth: '600px',
                   margin: '0 auto',
                   lineHeight: 1.6,
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transition: 'color 0.3s ease'
                 }}>
                   Join thousands of learners who are already creating personalized courses with AI.
                   Start your learning journey today.
@@ -325,7 +371,9 @@ export default function Home() {
                   icon={<GoogleOutlined />}
                   onClick={() => signIn('google')}
                   style={{
-                    background: 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
+                    background: isDark 
+                      ? 'linear-gradient(135deg, #4dabf7 0%, #74c0fc 100%)'
+                      : 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
                     border: 'none',
                     fontSize: 'clamp(14px, 3vw, 18px)',
                     fontWeight: 600,
@@ -335,9 +383,27 @@ export default function Home() {
                     minHeight: '48px',
                     display: 'flex',
                     alignItems: 'center',
+                    width: '100%',
                     gap: '8px',
                     whiteSpace: 'nowrap',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                    boxShadow: isDark 
+                      ? '0 6px 20px rgba(77, 171, 247, 0.4)'
+                      : '0 6px 20px rgba(28, 126, 214, 0.4)',
+                    transform: 'translateY(0)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = isDark 
+                      ? '0 8px 25px rgba(77, 171, 247, 0.5)'
+                      : '0 8px 25px rgba(28, 126, 214, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = isDark 
+                      ? '0 6px 20px rgba(77, 171, 247, 0.4)'
+                      : '0 6px 20px rgba(28, 126, 214, 0.4)';
                   }}
                 >
                   Start Learning Now

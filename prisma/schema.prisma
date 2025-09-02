@@ -70,7 +70,14 @@ model Course {
   learningOutcomes Json?
   thumbnailUrl    String?
   status          String         @default("active") // 'active' or 'archived'
-  
+
+  // Course customization fields
+  difficulty      String         @default("intermediate") // 'beginner', 'intermediate', 'advanced'
+  expertiseLevel  String         @default("general") // 'novice', 'intermediate', 'expert', 'general'
+  numberOfWeeks   Int            @default(2)
+  quizzesPerWeek  Int            @default(2)
+  questionsPerQuiz Int           @default(5)
+
   authorId        String
   author          User           @relation(fields: [authorId], references: [id])
   weeks           Week[]

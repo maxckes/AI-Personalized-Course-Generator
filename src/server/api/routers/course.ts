@@ -14,6 +14,7 @@ import {
   generateQuizContent,
   getVideoContentPlaceholder,
 } from "../ai/ai";
+import { type CourseGenerationParams } from "~/types/ai";
 
 export const courseRouter = createTRPCRouter({
     /**
@@ -89,13 +90,18 @@ export const courseRouter = createTRPCRouter({
       }),
   
     /**
-     * Generates a new placeholder course.
+     * Generates a new course with customization options.
      * Includes the core logic to limit users to 3 courses.
      */
     generate: protectedProcedure
       .input(
         z.object({
           title: z.string().min(3, "Title must be at least 3 characters long"),
+          difficulty: z.enum(["beginner", "intermediate", "advanced"]).default("intermediate"),
+          expertiseLevel: z.enum(["novice", "intermediate", "expert", "general"]).default("general"),
+          numberOfWeeks: z.number().min(1).max(12).default(2),
+          quizzesPerWeek: z.number().min(1).max(10).default(2),
+          questionsPerQuiz: z.number().min(3).max(20).default(5),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -114,7 +120,16 @@ export const courseRouter = createTRPCRouter({
           });
         }
                 try{
-          const skeleton = await generateCourseSkeleton(input.title);
+          const generationParams: CourseGenerationParams = {
+            title: input.title,
+            difficulty: input.difficulty,
+            expertiseLevel: input.expertiseLevel,
+            numberOfWeeks: input.numberOfWeeks,
+            quizzesPerWeek: input.quizzesPerWeek,
+            questionsPerQuiz: input.questionsPerQuiz,
+          };
+
+          const skeleton = await generateCourseSkeleton(generationParams);
           
           // Generate all AI content upfront, outside the database transaction
           const enrichedSkeleton = await Promise.all(
@@ -127,7 +142,7 @@ export const courseRouter = createTRPCRouter({
                   if (moduleItem.contentType === "READING") {
                     content = await generateReadingContent(moduleItem.title);
                   } else if (moduleItem.contentType === "QUIZ") {
-                    content = await generateQuizContent(moduleItem.title);
+                    content = await generateQuizContent(moduleItem.title, generationParams.questionsPerQuiz);
                   } else if (moduleItem.contentType === "VIDEO") {
                     content = getVideoContentPlaceholder(moduleItem.title);
                   }
@@ -148,6 +163,11 @@ export const courseRouter = createTRPCRouter({
                 authorId: ctx.session.user.id,
                 title: skeleton.title,
                 description: skeleton.description,
+                difficulty: generationParams.difficulty,
+                expertiseLevel: generationParams.expertiseLevel,
+                numberOfWeeks: generationParams.numberOfWeeks,
+                quizzesPerWeek: generationParams.quizzesPerWeek,
+                questionsPerQuiz: generationParams.questionsPerQuiz,
               },
             });
 

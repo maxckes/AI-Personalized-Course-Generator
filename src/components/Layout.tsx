@@ -48,9 +48,8 @@ export function Layout({ children }: LayoutProps) {
 
   const handleSignOut = () => {
     message.success('You have been successfully signed out.');
-    void signOut();
+    void signOut({ callbackUrl: '/' });
   };
-
   return (
     <AntLayout style={{ 
       height: '100vh', 

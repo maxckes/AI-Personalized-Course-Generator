@@ -14,7 +14,9 @@ import {
   Badge as AntBadge,
   Space,
   message,
-  notification
+  notification,
+  Select,
+  InputNumber
 } from 'antd';
 import {
   PlusOutlined,
@@ -41,6 +43,13 @@ export default function Dashboard() {
   const [courseTitle, setCourseTitle] = useState('');
   const [activeTab, setActiveTab] = useState<string>('active');
   const [courseToDelete, setCourseToDelete] = useState<{ id: string; title: string } | null>(null);
+
+  // Course customization state
+  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate');
+  const [expertiseLevel, setExpertiseLevel] = useState<'novice' | 'intermediate' | 'expert' | 'general'>('general');
+  const [numberOfWeeks, setNumberOfWeeks] = useState<number>(2);
+  const [quizzesPerWeek, setQuizzesPerWeek] = useState<number>(2);
+  const [questionsPerQuiz, setQuestionsPerQuiz] = useState<number>(5);
   
   // Track loading states for individual items
   const [loadingStates, setLoadingStates] = useState<{
@@ -66,7 +75,15 @@ export default function Dashboard() {
       await utils.course.getAll.invalidate();
 
       message.success(`Course "${data.title}" created successfully! 🎉`);
+
+      // Reset all form fields
       setCourseTitle('');
+      setDifficulty('intermediate');
+      setExpertiseLevel('general');
+      setNumberOfWeeks(2);
+      setQuizzesPerWeek(2);
+      setQuestionsPerQuiz(5);
+
       setOpened(false);
     },
     onError: (error) => {
@@ -196,7 +213,14 @@ export default function Dashboard() {
 
   const handleCreateCourse = () => {
     if (!courseTitle.trim()) return;
-    createCourse.mutate({ title: courseTitle });
+    createCourse.mutate({
+      title: courseTitle,
+      difficulty,
+      expertiseLevel,
+      numberOfWeeks,
+      quizzesPerWeek,
+      questionsPerQuiz,
+    });
   };
 
   const handleArchiveCourse = (courseId: string) => {
@@ -457,14 +481,15 @@ export default function Dashboard() {
               Create Course
             </Button>,
           ]}
+          width={600}
         >
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
             <div>
               <Text strong style={{ display: 'block', marginBottom: '8px' }}>
-                Course Title
+                Course Title *
               </Text>
               <Input
-                placeholder="Enter course title"
+                placeholder="Enter course title (e.g., Introduction to Machine Learning)"
                 value={courseTitle}
                 onChange={(e) => setCourseTitle(e.target.value)}
                 status={courseTitle.length > 0 && courseTitle.length < 3 ? 'error' : ''}
@@ -475,6 +500,92 @@ export default function Dashboard() {
                 </Text>
               )}
             </div>
+
+            <Row gutter={16}>
+              <Col xs={24} md={12}>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Difficulty Level
+                  </Text>
+                  <Select
+                    value={difficulty}
+                    onChange={setDifficulty}
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 'beginner', label: 'Beginner - Basic concepts and fundamentals' },
+                      { value: 'intermediate', label: 'Intermediate - Some prior knowledge required' },
+                      { value: 'advanced', label: 'Advanced - Deep understanding needed' },
+                    ]}
+                  />
+                </div>
+              </Col>
+              <Col xs={24} md={12}>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Expertise Level
+                  </Text>
+                  <Select
+                    value={expertiseLevel}
+                    onChange={setExpertiseLevel}
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 'novice', label: 'Novice - New to the topic' },
+                      { value: 'intermediate', label: 'Intermediate - Basic familiarity' },
+                      { value: 'expert', label: 'Expert - Advanced knowledge' },
+                      { value: 'general', label: 'General - Mixed audience' },
+                    ]}
+                  />
+                </div>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col xs={24} md={8}>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Number of Weeks
+                  </Text>
+                  <InputNumber
+                    min={1}
+                    max={12}
+                    value={numberOfWeeks}
+                    onChange={(value) => setNumberOfWeeks(value ?? 2)}
+                    style={{ width: '100%' }}
+                    placeholder="2"
+                  />
+                </div>
+              </Col>
+              <Col xs={24} md={8}>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Quizzes per Week
+                  </Text>
+                  <InputNumber
+                    min={1}
+                    max={10}
+                    value={quizzesPerWeek}
+                    onChange={(value) => setQuizzesPerWeek(value ?? 2)}
+                    style={{ width: '100%' }}
+                    placeholder="2"
+                  />
+                </div>
+              </Col>
+              <Col xs={24} md={8}>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                    Questions per Quiz
+                  </Text>
+                  <InputNumber
+                    min={3}
+                    max={20}
+                    value={questionsPerQuiz}
+                    onChange={(value) => setQuestionsPerQuiz(value ?? 5)}
+                    style={{ width: '100%' }}
+                    placeholder="5"
+                  />
+                </div>
+              </Col>
+            </Row>
           </Space>
         </Modal>
 

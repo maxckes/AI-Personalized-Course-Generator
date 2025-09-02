@@ -1,7 +1,7 @@
 // /server/api/ai.ts
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-import { type AICourseSkeleton } from "~/types/ai"; 
+import { type AICourseSkeleton, type CourseGenerationParams, type QuizContent, type ReadingContent, type VideoContent } from "~/types/ai"; 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -23,8 +23,16 @@ const model = genAI.getGenerativeModel({
 /**
  * Generates the main skeleton of the course: weeks and modules.
  */
-export async function generateCourseSkeleton(topic: string) {
-  const prompt = `Create a 2-week course syllabus on the topic: "${topic}".
+export async function generateCourseSkeleton(params: CourseGenerationParams) {
+  const { title, difficulty, expertiseLevel, numberOfWeeks, quizzesPerWeek } = params;
+
+  const prompt = `Create a ${numberOfWeeks}-week course syllabus on the topic: "${title}".
+
+Course Details:
+- Difficulty Level: ${difficulty}
+- Expertise Level: ${expertiseLevel}
+- Number of Weeks: ${numberOfWeeks}
+- Quizzes per Week: ${quizzesPerWeek}
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -39,20 +47,18 @@ Return ONLY a valid JSON object with this exact structure:
         {"title": "Module 2 title", "contentType": "VIDEO"},
         {"title": "Module 3 title", "contentType": "QUIZ"}
       ]
-    },
-    {
-      "weekNumber": 2,
-      "title": "Week 2 title",
-      "modules": [
-        {"title": "Module 1 title", "contentType": "READING"},
-        {"title": "Module 2 title", "contentType": "VIDEO"},
-        {"title": "Module 3 title", "contentType": "QUIZ"}
-      ]
     }
   ]
 }
 
-contentType must be exactly one of: "READING", "VIDEO", or "QUIZ".
+Requirements:
+- Create exactly ${numberOfWeeks} weeks
+- Each week should have approximately ${quizzesPerWeek} quiz modules
+- Include a mix of READING, VIDEO, and QUIZ content types
+- Tailor the content difficulty to: ${difficulty} level for ${expertiseLevel} expertise
+- contentType must be exactly one of: "READING", "VIDEO", or "QUIZ"
+- Make the course structure logical and progressive
+
 Return only valid JSON, no additional text or explanations.`;
   
   const maxRetries = 3;
@@ -126,11 +132,7 @@ Return only valid JSON, no additional text or explanations.`;
       // Remove any potential markdown code block markers
       const cleanJson = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       
-      const content = JSON.parse(cleanJson) as { 
-        blogContent: string;
-        summary: string;
-        readingTime: string;
-      };
+      const content = JSON.parse(cleanJson) as ReadingContent;
       
       if (!content.blogContent || typeof content.blogContent !== 'string') {
         throw new Error('Invalid reading content structure');
@@ -151,18 +153,19 @@ Return only valid JSON, no additional text or explanations.`;
   
   // Fallback content if AI fails
   console.warn(`Failed to generate reading content after ${maxRetries} attempts: ${lastError?.message}`);
-  return {
+  const fallbackContent: ReadingContent = {
     blogContent: `# ${moduleTitle}\n\nThis comprehensive blog post about ${moduleTitle} is currently being generated. \n\n## Coming Soon\n\nWe're working on creating detailed, engaging content for this module. Please check back later for the complete blog post with:\n\n- In-depth explanations\n- Practical examples\n- Real-world applications\n- Key takeaways\n\nThank you for your patience!`,
     summary: "Content is being generated for this module.",
     readingTime: "2 min read"
   };
+  return fallbackContent;
 }
 
 /**
  * Generates a comprehensive quiz for a "QUIZ" module with enhanced content.
  */
-export async function generateQuizContent(moduleTitle: string) {
-  const prompt = `Create an engaging 5-question multiple-choice quiz about "${moduleTitle}".
+export async function generateQuizContent(moduleTitle: string, questionsPerQuiz = 5) {
+  const prompt = `Create an engaging ${questionsPerQuiz}-question multiple-choice quiz about "${moduleTitle}".
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -173,20 +176,15 @@ Return ONLY a valid JSON object with this exact structure:
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": "Option A",
       "explanation": "Brief explanation of why this is the correct answer"
-    },
-    {
-      "questionText": "Another thoughtful question?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": "Option B",
-      "explanation": "Brief explanation of why this is the correct answer"
     }
   ],
-  "totalQuestions": 5,
-  "estimatedTime": "8-12 minutes",
+  "totalQuestions": ${questionsPerQuiz},
+  "estimatedTime": "${Math.max(5, questionsPerQuiz * 2)}-${Math.max(8, questionsPerQuiz * 3)} minutes",
   "difficulty": "Beginner" or "Intermediate" or "Advanced"
 }
 
 Requirements:
+- Create exactly ${questionsPerQuiz} questions
 - Make questions engaging and practical, not just theoretical
 - Each question must have exactly 4 options
 - The correctAnswer must match one of the options exactly
@@ -207,18 +205,7 @@ Return only valid JSON, no additional text or explanations.`;
       // Remove any potential markdown code block markers
       const cleanJson = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       
-      const content = JSON.parse(cleanJson) as { 
-        introduction: string;
-        questions: Array<{ 
-          questionText: string; 
-          options: string[]; 
-          correctAnswer: string;
-          explanation?: string;
-        }>;
-        totalQuestions: number;
-        estimatedTime: string;
-        difficulty: string;
-      };
+      const content = JSON.parse(cleanJson) as QuizContent;
       
       if (!content.questions || !Array.isArray(content.questions) || content.questions.length === 0) {
         throw new Error('Invalid quiz content structure');
@@ -249,67 +236,39 @@ Return only valid JSON, no additional text or explanations.`;
   
   // Enhanced fallback content if AI fails
   console.warn(`Failed to generate quiz content after ${maxRetries} attempts: ${lastError?.message}`);
+
+  // Generate fallback questions based on questionsPerQuiz
+  const fallbackQuestions = [];
+  for (let i = 0; i < questionsPerQuiz; i++) {
+    fallbackQuestions.push({
+      questionText: i === 0
+        ? `What is the main focus of ${moduleTitle}?`
+        : i === 1
+        ? `Why is learning about ${moduleTitle} important?`
+        : `How can you apply knowledge of ${moduleTitle}?`,
+      options: i === 0
+        ? [`Understanding ${moduleTitle}`, "Something else entirely", "Not related to the topic", "Unknown concept"]
+        : i === 1
+        ? ["It's not important", "It helps build foundational knowledge", "It's just for fun", "No specific reason"]
+        : ["You cannot apply it", "Only in theoretical contexts", "In real-world scenarios and practical situations", "Only in academic settings"],
+      correctAnswer: i === 0
+        ? `Understanding ${moduleTitle}`
+        : i === 1
+        ? "It helps build foundational knowledge"
+        : "In real-world scenarios and practical situations",
+      explanation: i === 0
+        ? `This question focuses on the core concept of ${moduleTitle}.`
+        : i === 1
+        ? "Learning foundational concepts is crucial for building expertise."
+        : "Knowledge is most valuable when it can be applied practically."
+    });
+  }
+
   return {
     introduction: `Test your knowledge of ${moduleTitle} with this interactive quiz!`,
-    questions: [
-      {
-        questionText: `What is the main focus of ${moduleTitle}?`,
-        options: [
-          `Understanding ${moduleTitle}`,
-          "Something else entirely",
-          "Not related to the topic",
-          "Unknown concept"
-        ],
-        correctAnswer: `Understanding ${moduleTitle}`,
-        explanation: `This question focuses on the core concept of ${moduleTitle}.`
-      },
-      {
-        questionText: `Why is learning about ${moduleTitle} important?`,
-        options: [
-          "It's not important",
-          "It helps build foundational knowledge",
-          "It's just for fun",
-          "No specific reason"
-        ],
-        correctAnswer: "It helps build foundational knowledge",
-        explanation: "Learning foundational concepts is crucial for building expertise."
-      },
-      {
-        questionText: "How can you apply knowledge gained from this module?",
-        options: [
-          "You cannot apply it",
-          "Only in theoretical contexts",
-          "In real-world scenarios and practical situations",
-          "Only in academic settings"
-        ],
-        correctAnswer: "In real-world scenarios and practical situations",
-        explanation: "Knowledge is most valuable when it can be applied practically."
-      },
-      {
-        questionText: "What's the best approach to mastering this topic?",
-        options: [
-          "Memorizing everything",
-          "Skipping the difficult parts",
-          "Practice and consistent review",
-          "Reading once is enough"
-        ],
-        correctAnswer: "Practice and consistent review",
-        explanation: "Consistent practice and review lead to better retention and understanding."
-      },
-      {
-        questionText: "How does this topic connect to broader learning?",
-        options: [
-          "It doesn't connect to anything",
-          "It serves as a building block for advanced concepts",
-          "It's completely isolated",
-          "It only matters for tests"
-        ],
-        correctAnswer: "It serves as a building block for advanced concepts",
-        explanation: "Foundational topics often connect to and support more advanced learning."
-      }
-    ],
-    totalQuestions: 5,
-    estimatedTime: "8-12 minutes",
+    questions: fallbackQuestions,
+    totalQuestions: questionsPerQuiz,
+    estimatedTime: `${Math.max(5, questionsPerQuiz * 2)}-${Math.max(8, questionsPerQuiz * 3)} minutes`,
     difficulty: "Beginner"
   };
 }
@@ -318,7 +277,7 @@ Return only valid JSON, no additional text or explanations.`;
  * For "VIDEO" modules, show coming soon message.
  * A real implementation would use the YouTube API curation logic here.
  */
-export function getVideoContentPlaceholder(moduleTitle: string) {
+export function getVideoContentPlaceholder(moduleTitle: string): VideoContent {
   return {
     title: moduleTitle,
     status: "coming_soon",
