@@ -1,7 +1,7 @@
 "use client";
 
-import { Stack, Text, Button, Box, useMantineColorScheme } from '@mantine/core';
-import { IconBook, IconPlus, IconSearch } from '@tabler/icons-react';
+import { Typography, Button, Space } from 'antd';
+import { BookOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 
 interface EmptyStateProps {
   title: string;
@@ -12,82 +12,82 @@ interface EmptyStateProps {
   variant?: 'default' | 'search' | 'create';
 }
 
-export function EmptyState({ 
-  title, 
-  description, 
+const { Text, Title } = Typography;
+
+export function EmptyState({
+  title,
+  description,
   icon,
   actionLabel,
   onAction,
   variant = 'default'
 }: EmptyStateProps) {
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const isDark = false; // TODO: Implement proper theme detection
 
   const getIcon = () => {
     if (icon) return icon;
-    
+
     switch (variant) {
       case 'search':
-        return <IconSearch size={48} color={isDark ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-gray-5)'} />;
+        return <SearchOutlined style={{ fontSize: '48px', color: isDark ? '#8c8c8c' : '#bfbfbf' }} />;
       case 'create':
-        return <IconPlus size={48} color={isDark ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-blue-5)'} />;
+        return <PlusOutlined style={{ fontSize: '48px', color: isDark ? '#40a9ff' : '#1890ff' }} />;
       default:
-        return <IconBook size={48} color={isDark ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-gray-5)'} />;
+        return <BookOutlined style={{ fontSize: '48px', color: isDark ? '#8c8c8c' : '#bfbfbf' }} />;
     }
   };
 
-  const getActionColor = () => {
+  const getActionType = () => {
     switch (variant) {
       case 'create':
-        return 'blue';
+        return 'primary';
       default:
-        return 'gray';
+        return 'default';
     }
   };
 
   return (
-    <Box 
+    <div
       className="flex items-center justify-center p-8"
       style={{
-        background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-white)',
-        borderRadius: 'var(--mantine-radius-lg)',
-        border: isDark ? '1px solid var(--mantine-color-dark-4)' : '1px solid var(--mantine-color-gray-3)',
+        background: isDark ? '#262626' : '#ffffff',
+        borderRadius: '8px',
+        border: isDark ? '1px solid #434343' : '1px solid #d9d9d9',
         minHeight: '300px'
       }}
     >
-      <Stack gap="lg" align="center" ta="center" maw={400}>
-        <Box
-          p="lg"
+      <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', maxWidth: '400px' }}>
+        <div
           style={{
-            background: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-1)',
-            borderRadius: 'var(--mantine-radius-xl)',
-            border: isDark ? '1px solid var(--mantine-color-dark-3)' : '1px solid var(--mantine-color-gray-2)'
+            padding: '24px',
+            background: isDark ? '#1a1a1a' : '#fafafa',
+            borderRadius: '12px',
+            border: isDark ? '1px solid #303030' : '1px solid #f0f0f0'
           }}
         >
           {getIcon()}
-        </Box>
-        
-        <Stack gap="sm">
-          <Text size="xl" fw={600} c={isDark ? 'white' : 'dark'}>
+        </div>
+
+        <Space direction="vertical" size="small">
+          <Title level={3} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>
             {title}
-          </Text>
-          <Text c={isDark ? 'gray.4' : 'dimmed'} style={{ lineHeight: 1.6 }}>
+          </Title>
+          <Text style={{ color: isDark ? '#a6a6a6' : '#8c8c8c', lineHeight: 1.6 }}>
             {description}
           </Text>
-        </Stack>
-        
+        </Space>
+
         {actionLabel && onAction && (
           <Button
-            leftSection={variant === 'create' ? <IconPlus size={16} /> : undefined}
+            icon={variant === 'create' ? <PlusOutlined /> : undefined}
             onClick={onAction}
-            color={getActionColor()}
-            size="md"
-            radius="md"
+            type={getActionType()}
+            size="middle"
           >
             {actionLabel}
           </Button>
         )}
-      </Stack>
-    </Box>
+      </Space>
+    </div>
   );
 } 

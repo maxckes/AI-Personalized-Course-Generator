@@ -2,23 +2,24 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Container, 
-  Title, 
-  Card, 
-  Text, 
-  Button, 
-  Group, 
-  Stack, 
-  TextInput, 
-  Badge,
+import {
+  Typography,
+  Card,
+  Button,
+  Input,
+  Badge as AntBadge,
   Divider,
   List,
-  Loader,
-  Alert
-} from '@mantine/core';
-import { IconPlus, IconArchive, IconRestore, IconCheck, IconX, IconInfoCircle } from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications';
+  Spin,
+  Alert,
+  Space,
+  notification
+} from 'antd';
+import {
+  PlusOutlined,
+  ContainerOutlined,
+  UndoOutlined
+} from '@ant-design/icons';
 import { api } from "~/trpc/react";
 import { AuthShowcase } from "../_components/AuthShowcase";
 
@@ -33,23 +34,19 @@ export default function ApiTestPage() {
   const generateCourse = api.course.generate.useMutation({
     onSuccess: (data) => {
       console.log("✅ Course generated successfully:", data);
-      notifications.show({
-        title: 'Course Generated!',
-        message: `"${data.title}" has been created successfully.`,
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 4000,
+      notification.success({
+        message: 'Course Generated!',
+        description: `"${data.title}" has been created successfully.`,
+        duration: 4,
       });
       void getCourses.refetch(); // Refetch the course list after a new one is created
     },
     onError: (error) => {
       console.error("❌ Error generating course:", error.message);
-      notifications.show({
-        title: 'Generation Failed',
-        message: error.message,
-        color: 'red',
-        icon: <IconX size={18} />,
-        autoClose: 6000,
+      notification.error({
+        message: 'Generation Failed',
+        description: error.message,
+        duration: 6,
       });
     },
   });
@@ -58,23 +55,19 @@ export default function ApiTestPage() {
   const archiveCourse = api.course.archive.useMutation({
     onSuccess: (data) => {
       console.log("✅ Course archived successfully:", data);
-      notifications.show({
-        title: 'Course Archived',
-        message: `"${data.title}" moved to archives.`,
-        color: 'blue',
-        icon: <IconInfoCircle size={18} />,
-        autoClose: 3000,
+      notification.info({
+        message: 'Course Archived',
+        description: `"${data.title}" moved to archives.`,
+        duration: 3,
       });
       void getCourses.refetch(); // Refetch the course list
     },
     onError: (error) => {
       console.error("❌ Error archiving course:", error.message);
-      notifications.show({
-        title: 'Archive Failed',
-        message: error.message,
-        color: 'red',
-        icon: <IconX size={18} />,
-        autoClose: 5000,
+      notification.error({
+        message: 'Archive Failed',
+        description: error.message,
+        duration: 5,
       });
     },
   });
@@ -83,165 +76,166 @@ export default function ApiTestPage() {
   const restoreCourse = api.course.restore.useMutation({
     onSuccess: (data) => {
       console.log("✅ Course restored successfully:", data);
-      notifications.show({
-        title: 'Course Restored',
-        message: `"${data.title}" is now active again.`,
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 3000,
+      notification.success({
+        message: 'Course Restored',
+        description: `"${data.title}" is now active again.`,
+        duration: 3,
       });
       void getCourses.refetch(); // Refetch the course list
     },
     onError: (error) => {
       console.error("❌ Error restoring course:", error.message);
-      notifications.show({
-        title: 'Restore Failed',
-        message: error.message,
-        color: 'red',
-        icon: <IconX size={18} />,
-        autoClose: 5000,
+      notification.error({
+        message: 'Restore Failed',
+        description: error.message,
+        duration: 5,
       });
     },
   });
 
+  const { Title, Text } = Typography;
+
   return (
-    <Container size="lg" py="xl">
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       <AuthShowcase />
-      
-      <Stack gap="xl" mt="xl">
-        <Title order={1} ta="center" mb="lg">
+
+      <Space direction="vertical" size="large" style={{ marginTop: '24px' }}>
+        <Title level={1} style={{ textAlign: 'center', marginBottom: '24px' }}>
           🧪 API Test Laboratory
         </Title>
 
-        <Alert color="blue" icon={<IconInfoCircle />}>
-          This page allows you to test all course management APIs. Check the browser console for detailed API responses.
-        </Alert>
+        <Alert message="API Testing Information" description="This page allows you to test all course management APIs. Check the browser console for detailed API responses." type="info" showIcon />
 
         {/* Display Courses */}
-        <Card withBorder shadow="sm" padding="lg" radius="md">
-          <Group justify="space-between" mb="md">
-            <Title order={2}>My Courses</Title>
-            <Badge color="blue" variant="light">
-              {getCourses.data?.length ?? 0} total
-            </Badge>
-          </Group>
-          
+        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <Title level={2} style={{ margin: 0 }}>My Courses</Title>
+            <AntBadge count={`${getCourses.data?.length ?? 0} total`} style={{ backgroundColor: '#1890ff' }} />
+          </div>
+
           {getCourses.isLoading ? (
-            <Group justify="center" py="md">
-              <Loader size="sm" />
-              <Text>Loading courses...</Text>
-            </Group>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
+              <Spin size="small" />
+              <Text style={{ marginLeft: '8px' }}>Loading courses...</Text>
+            </div>
           ) : (
-            <Stack gap="sm">
+            <Space direction="vertical" size="small">
               {getCourses.data?.length === 0 ? (
-                <Text c="dimmed" ta="center" py="md">
+                <Text style={{ color: '#8c8c8c', textAlign: 'center', padding: '16px' }}>
                   No courses found. Create one below!
                 </Text>
               ) : (
-                <List spacing="xs">
-                  {getCourses.data?.map((course) => (
+                <List
+                  dataSource={getCourses.data}
+                  renderItem={(course) => (
                     <List.Item key={course.id}>
-                      <Card withBorder padding="sm" radius="sm">
-                        <Group justify="space-between" align="flex-start">
-                          <Stack gap="xs" style={{ flex: 1 }}>
-                            <Group gap="sm">
-                              <Text fw={500}>{course.title}</Text>
-                              <Badge 
-                                color={course.status === 'active' ? 'green' : 'gray'}
-                                size="sm"
-                                variant="light"
-                              >
-                                {course.status}
-                              </Badge>
-                            </Group>
-                            <Text size="xs" c="dimmed">
+                      <Card bordered size="small">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Space direction="vertical" size="small" style={{ flex: 1 }}>
+                            <Space>
+                              <Text strong>{course.title}</Text>
+                              <AntBadge
+                                count={course.status}
+                                style={{
+                                  backgroundColor: course.status === 'active' ? '#52c41a' : '#d9d9d9',
+                                  color: course.status === 'active' ? 'white' : 'black'
+                                }}
+                              />
+                            </Space>
+                            <Text style={{ fontSize: '12px', color: '#8c8c8c' }}>
                               ID: {course.id}
                             </Text>
-                          </Stack>
-                          
-                          <Group gap="xs">
+                          </Space>
+
+                          <Space>
                             {course.status === 'active' ? (
                               <Button
-                                size="xs"
-                                variant="light"
-                                color="blue"
-                                leftSection={<IconArchive size={14} />}
+                                size="small"
                                 onClick={() => archiveCourse.mutate({ courseId: course.id })}
                                 loading={archiveCourse.isPending}
+                                icon={<ContainerOutlined />}
                               >
                                 Archive
                               </Button>
                             ) : (
                               <Button
-                                size="xs"
-                                variant="light"
-                                color="green"
-                                leftSection={<IconRestore size={14} />}
+                                size="small"
+                                type="primary"
                                 onClick={() => restoreCourse.mutate({ courseId: course.id })}
                                 loading={restoreCourse.isPending}
+                                icon={<UndoOutlined />}
                               >
                                 Restore
                               </Button>
                             )}
-                          </Group>
-                        </Group>
+                          </Space>
+                        </div>
                       </Card>
                     </List.Item>
-                  ))}
-                </List>
+                  )}
+                />
               )}
-            </Stack>
+            </Space>
           )}
         </Card>
 
         <Divider />
 
         {/* Generate Course */}
-        <Card withBorder shadow="sm" padding="lg" radius="md">
-          <Title order={3} mb="md">Generate New Course</Title>
-          <Stack gap="md">
-            <TextInput
-              label="Course Title"
-              placeholder="Enter course title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              error={title.length > 0 && title.length < 3 ? 'Title must be at least 3 characters' : null}
-            />
+        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <Title level={3} style={{ marginBottom: '16px' }}>Generate New Course</Title>
+          <Space direction="vertical" size="middle">
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: '8px' }}>Course Title</Text>
+              <Input
+                placeholder="Enter course title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                status={title.length > 0 && title.length < 3 ? 'error' : ''}
+              />
+              {title.length > 0 && title.length < 3 && (
+                <Text type="danger" style={{ fontSize: '12px', marginTop: '4px' }}>
+                  Title must be at least 3 characters
+                </Text>
+              )}
+            </div>
             <Button
-              leftSection={<IconPlus size={16} />}
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={() => generateCourse.mutate({ title })}
               loading={generateCourse.isPending}
               disabled={title.length < 3}
-              fullWidth
+              block
             >
               {generateCourse.isPending ? 'Generating...' : 'Generate Course'}
             </Button>
-          </Stack>
+          </Space>
         </Card>
         
         {/* Manual Archive Course */}
-        <Card withBorder shadow="sm" padding="lg" radius="md">
-          <Title order={3} mb="md">Manual Archive (by ID)</Title>
-          <Stack gap="md">
-            <TextInput
-              label="Course ID"
-              placeholder="Enter Course ID to archive..."
-              value={courseIdToArchive}
-              onChange={(e) => setCourseIdToArchive(e.target.value)}
-            />
+        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          <Title level={3} style={{ marginBottom: '16px' }}>Manual Archive (by ID)</Title>
+          <Space direction="vertical" size="middle">
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: '8px' }}>Course ID</Text>
+              <Input
+                placeholder="Enter Course ID to archive..."
+                value={courseIdToArchive}
+                onChange={(e) => setCourseIdToArchive(e.target.value)}
+              />
+            </div>
             <Button
-              leftSection={<IconArchive size={16} />}
-              color="blue"
+              icon={<ContainerOutlined />}
               onClick={() => archiveCourse.mutate({ courseId: courseIdToArchive })}
               loading={archiveCourse.isPending}
               disabled={!courseIdToArchive.trim()}
-              fullWidth
+              block
             >
               {archiveCourse.isPending ? 'Archiving...' : 'Archive Course'}
             </Button>
-          </Stack>
+          </Space>
         </Card>
-      </Stack>
-    </Container>
+      </Space>
+    </div>
   );
 }

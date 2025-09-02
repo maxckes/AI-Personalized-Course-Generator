@@ -54,7 +54,7 @@ export const courseRouter = createTRPCRouter({
 
     /**
      * Restores an archived course back to active status.
-     * Includes logic to enforce the 2-course limit for active courses.
+     * Includes logic to enforce the 3-course limit for active courses.
      */
     restore: protectedProcedure
       .input(z.object({ courseId: z.string() }))
@@ -67,11 +67,11 @@ export const courseRouter = createTRPCRouter({
           },
         });
 
-        // 2. Enforce the 2-course limit for active courses
-        if (activeCourseCount >= 2) {
+        // 2. Enforce the 3-course limit for active courses
+        if (activeCourseCount >= 3) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "You already have 2 active courses. Please archive one first to restore this course.",
+            message: "You already have 3 active courses. Please archive one first to restore this course.",
           });
         }
 
@@ -90,7 +90,7 @@ export const courseRouter = createTRPCRouter({
   
     /**
      * Generates a new placeholder course.
-     * Includes the core logic to limit users to 2 courses.
+     * Includes the core logic to limit users to 3 courses.
      */
     generate: protectedProcedure
       .input(
@@ -106,11 +106,11 @@ export const courseRouter = createTRPCRouter({
           },
         });
   
-        // 2. Enforce the 2-course limit
-        if (courseCount >= 2) {
+        // 2. Enforce the 3-course limit
+        if (courseCount >= 3) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "You have reached the maximum of 2 courses. Please archive one to create a new one.",
+            message: "You have reached the maximum of 3 courses. Please archive one to create a new one.",
           });
         }
                 try{

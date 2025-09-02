@@ -1,41 +1,44 @@
 "use client";
 
-import { 
-  Container, 
-  Title, 
-  Text, 
-  Button, 
-  Stack, 
-  Group, 
+import {
+  Layout,
+  Typography,
+  Button,
   Card,
   Badge,
-  Grid,
-  Box,
-  Divider,
-  ActionIcon,
-  Tooltip,
-  useMantineColorScheme
-} from '@mantine/core';
-import { 
-  IconBook, 
-  IconBrandGoogle, 
-  IconBrain, 
-  IconTarget, 
-  IconRocket, 
-  IconCheck,
-  IconArrowRight,
-  IconSun,
-  IconMoon
-} from '@tabler/icons-react';
+  Row,
+  Col,
+  Space,
+  Spin,
+  message
+} from 'antd';
+import {
+  BookOutlined,
+  GoogleOutlined,
+  BulbOutlined,
+  AimOutlined,
+  RocketOutlined,
+  CheckCircleOutlined,
+  ArrowRightOutlined,
+  SunOutlined,
+  MoonOutlined
+} from '@ant-design/icons';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+const { Title, Text } = Typography;
+const { Header, Content } = Layout;
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleColorScheme = () => {
+    setIsDark(!isDark);
+    message.info(isDark ? 'Switched to light mode' : 'Switched to dark mode');
+  };
 
   // Redirect to dashboard if authenticated
   useEffect(() => {
@@ -46,12 +49,17 @@ export default function Home() {
 
   if (status === 'loading') {
     return (
-      <Container size="sm" className="min-h-screen flex items-center justify-center">
-        <Stack align="center" gap="lg">
-          <div className="loading-skeleton w-16 h-16 rounded-full" />
-          <Text size="lg" c="dimmed">Loading Pathfinder...</Text>
-        </Stack>
-      </Container>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <Spin size="large" />
+        <Text>Loading Course.AI...</Text>
+      </div>
     );
   }
 
@@ -61,227 +69,241 @@ export default function Home() {
 
   const features = [
     {
-      icon: <IconBrain size={24} />,
+      icon: <BulbOutlined style={{ fontSize: '24px' }} />,
       title: "AI-Powered Content",
       description: "Generate personalized course content tailored to your learning style and goals"
     },
     {
-      icon: <IconTarget size={24} />,
+      icon: <AimOutlined style={{ fontSize: '24px' }} />,
       title: "Structured Learning",
       description: "Organized weekly modules with clear learning objectives and progress tracking"
     },
     {
-      icon: <IconRocket size={24} />,
+      icon: <RocketOutlined style={{ fontSize: '24px' }} />,
       title: "Interactive Experience",
       description: "Engage with quizzes, videos, and reading materials designed for optimal retention"
     },
     {
-      icon: <IconCheck size={24} />,
+      icon: <CheckCircleOutlined style={{ fontSize: '24px' }} />,
       title: "Progress Tracking",
       description: "Monitor your learning journey with detailed progress analytics and achievements"
     }
   ];
 
   return (
-    <Box className="min-h-screen" style={{
-      background: isDark 
-        ? 'linear-gradient(135deg, var(--mantine-color-dark-8) 0%, var(--mantine-color-dark-9) 100%)'
-        : 'linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-gray-0) 100%)'
+    <Layout style={{
+      minHeight: '100vh',
+      background: isDark
+        ? 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)'
+        : 'linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%)'
     }}>
       {/* Header with Theme Toggle */}
-      <Box p="md">
-        <Group justify="space-between" align="center">
-          <Group gap="sm">
-            <IconBook size={32} color={isDark ? '#5c7cfa' : '#1c7ed6'} />
-            <Title order={1} size="h3" c={isDark ? 'blue.4' : 'blue'}>
-              Pathfinder
+      <Header style={{
+        background: 'transparent',
+        padding: '16px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: 'none'
+      }}>
+        <Space style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <BookOutlined style={{ fontSize: '32px', color: isDark ? '#5c7cfa' : '#1c7ed6' }} />
+          <span>
+            <Title level={3} style={{ color: isDark ? '#5c7cfa' : '#1c7ed6', margin: 0 }}>
+              Course.AI
             </Title>
-          </Group>
-          
-          <Tooltip label={isDark ? "Switch to light mode" : "Switch to dark mode"}>
-            <ActionIcon
-              variant="light"
-              color={isDark ? 'yellow' : 'blue'}
-              onClick={() => toggleColorScheme()}
-              size="lg"
-              radius="md"
-            >
-              {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      </Box>
+          </span>
+        </Space>
 
-      <Container size="xl" py="xl">
-        <Stack gap="3xl" align="center">
+        <Button
+          type="text"
+          icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+          onClick={() => toggleColorScheme()}
+          size="large"
+        >
+          {isDark ? "Light" : "Dark"}
+        </Button>
+      </Header>
+
+      <Content style={{ padding: '48px 24px', maxWidth: '1200px', margin: '0 auto' }}>
+        <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           {/* Hero Section */}
-          <Stack gap="xl" align="center" ta="center" maw={800}>
-            <Group justify="center" gap="md">
-              <IconBook size={64} color={isDark ? '#5c7cfa' : '#1c7ed6'} />
-              <Title 
-                order={1} 
-                size="4rem" 
-                c={isDark ? 'white' : 'dark'}
-                style={{ 
+          <Space direction="vertical" size="large" style={{ alignItems: 'center', maxWidth: '800px', margin: '0 auto' }}>
+            <Space align="center">
+              <BookOutlined style={{ fontSize: '64px', color: isDark ? '#5c7cfa' : '#1c7ed6' }} />
+              <Title
+                level={1}
+                style={{
+                  fontSize: '4rem',
                   lineHeight: 1.1,
-                  background: isDark 
+                  background: isDark
                     ? 'linear-gradient(135deg, #5c7cfa 0%, #748ffc 100%)'
                     : 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  backgroundClip: 'text',
+                  margin: 0
                 }}
               >
-                Pathfinder
+                Course.AI
               </Title>
-            </Group>
-            
-            <Title 
-              order={2} 
-              size="2rem" 
-              c={isDark ? 'gray.3' : 'gray.7'}
-              fw={400}
-              style={{ lineHeight: 1.3 }}
+            </Space>
+
+            <Title
+              level={2}
+              style={{
+                color: isDark ? '#d1d5db' : '#6b7280',
+                fontWeight: 400,
+                lineHeight: 1.3,
+                margin: 0
+              }}
             >
               Your AI-Powered Learning Journey
             </Title>
-            
-            <Text 
-              size="xl" 
-              c={isDark ? 'gray.4' : 'dimmed'} 
-              maw={600}
-              style={{ lineHeight: 1.6 }}
+
+            <Text
+              style={{
+                fontSize: '20px',
+                color: isDark ? '#9ca3af' : '#6b7280',
+                maxWidth: '600px',
+                lineHeight: 1.6,
+                margin: '0 auto'
+              }}
             >
-              Generate personalized AI-powered courses tailored to your learning goals. 
-              Create up to 2 courses with structured weekly modules and interactive content.
+              Generate personalized AI-powered courses tailored to your learning goals.
+              Create up to 3 courses with structured weekly modules and interactive content.
             </Text>
 
-            <Group gap="lg" mt="xl">
-              <Button
-                size="xl"
-                leftSection={<IconBrandGoogle size={24} />}
-                rightSection={<IconArrowRight size={20} />}
-                onClick={() => signIn('google')}
-                style={{
-                  background: 'linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-5) 100%)',
-                  border: 'none',
-                  fontSize: '1.125rem',
-                  fontWeight: 600,
-                  padding: '1rem 2rem'
-                }}
-                radius="lg"
-              >
-                Get Started with Google
-              </Button>
-            </Group>
-          </Stack>
+            <Button
+              type="primary"
+              size="large"
+              icon={<GoogleOutlined />}
+              onClick={() => signIn('google')}
+              style={{
+                background: 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
+                border: 'none',
+                fontSize: '18px',
+                fontWeight: 600,
+                padding: '16px 32px',
+                height: 'auto',
+                borderRadius: '12px'
+              }}
+            >
+              Get Started with Google
+              <ArrowRightOutlined />
+            </Button>
+          </Space>
 
           {/* Features Section */}
-          <Stack gap="xl" w="100%">
-            <Stack gap="md" align="center" ta="center">
-              <Badge 
-                size="lg" 
-                variant="light" 
-                color="blue"
-                radius="md"
-                leftSection={<IconRocket size={16} />}
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space direction="vertical" size="middle" style={{ textAlign: 'center' }}>
+              <Badge
+                count={<RocketOutlined style={{ color: '#1c7ed6' }} />}
+                style={{ backgroundColor: '#e6f7ff', color: '#1c7ed6' }}
               >
-                Why Choose Pathfinder?
+                Why Choose Course.AI?
               </Badge>
-              <Title order={2} size="2.5rem" c={isDark ? 'white' : 'dark'}>
+              <Title level={2} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>
                 Powerful Features for Modern Learning
               </Title>
-            </Stack>
+            </Space>
 
-            <Grid gutter="xl">
+            <Row gutter={[24, 24]}>
               {features.map((feature, index) => (
-                <Grid.Col key={index} span={{ base: 12, sm: 6, lg: 3 }}>
-                  <Card 
-                    withBorder 
-                    p="xl" 
-                    radius="lg"
-                    h="100%"
+                <Col key={index} xs={24} sm={12} lg={6}>
+                  <Card
+                    bordered
                     style={{
-                      background: isDark 
-                        ? 'linear-gradient(135deg, var(--mantine-color-dark-6) 0%, var(--mantine-color-dark-5) 100%)'
-                        : 'linear-gradient(135deg, var(--mantine-color-white) 0%, var(--mantine-color-gray-0) 100%)',
-                      borderColor: isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)',
+                      height: '100%',
+                      background: isDark
+                        ? 'linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)'
+                        : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      borderColor: isDark ? '#404040' : '#e5e7eb',
                       transition: 'all 250ms ease-in-out'
                     }}
-                    className="card-hover"
+                    hoverable
                   >
-                    <Stack gap="lg" align="center" ta="center">
-                      <Box
-                        p="md"
+                    <Space direction="vertical" size="large" style={{ textAlign: 'center', width: '100%' }}>
+                      <div
                         style={{
-                          background: isDark 
-                            ? 'linear-gradient(135deg, var(--mantine-color-blue-9) 0%, var(--mantine-color-blue-8) 100%)'
-                            : 'linear-gradient(135deg, var(--mantine-color-blue-1) 0%, var(--mantine-color-blue-0) 100%)',
-                          borderRadius: 'var(--mantine-radius-lg)',
-                          color: isDark ? 'var(--mantine-color-blue-3)' : 'var(--mantine-color-blue-6)'
+                          padding: '16px',
+                          borderRadius: '12px',
+                          background: isDark
+                            ? 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)'
+                            : 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: isDark ? '#ffffff' : '#1c7ed6'
                         }}
                       >
                         {feature.icon}
-                      </Box>
-                      
-                      <Stack gap="sm">
-                        <Title order={3} size="h4" c={isDark ? 'white' : 'dark'}>
+                      </div>
+
+                      <Space direction="vertical" size="small">
+                        <Title level={4} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>
                           {feature.title}
                         </Title>
-                        <Text c={isDark ? 'gray.4' : 'dimmed'} style={{ lineHeight: 1.6 }}>
+                        <Text style={{ color: isDark ? '#9ca3af' : '#6b7280', lineHeight: 1.6 }}>
                           {feature.description}
                         </Text>
-                      </Stack>
-                    </Stack>
+                      </Space>
+                    </Space>
                   </Card>
-                </Grid.Col>
+                </Col>
               ))}
-            </Grid>
-          </Stack>
+            </Row>
+          </Space>
 
           {/* CTA Section */}
-          <Card 
-            withBorder 
-            p="xl" 
-            radius="xl"
+          <Card
+            bordered
             style={{
-              background: isDark 
-                ? 'linear-gradient(135deg, var(--mantine-color-blue-9) 0%, var(--mantine-color-blue-8) 100%)'
-                : 'linear-gradient(135deg, var(--mantine-color-blue-1) 0%, var(--mantine-color-blue-0) 100%)',
-              borderColor: isDark ? 'var(--mantine-color-blue-7)' : 'var(--mantine-color-blue-3)',
+              background: isDark
+                ? 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)'
+                : 'linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%)',
+              borderColor: isDark ? '#1c7ed6' : '#91d5ff',
               maxWidth: '600px',
-              width: '100%'
+              width: '100%',
+              margin: '0 auto'
             }}
           >
-            <Stack gap="lg" align="center" ta="center">
-              <Title order={2} size="2rem" c={isDark ? 'blue.3' : 'blue.7'}>
+            <Space direction="vertical" size="large" style={{ textAlign: 'center', width: '100%' }}>
+              <Title level={2} style={{ color: isDark ? '#ffffff' : '#1c7ed6', margin: 0 }}>
                 Ready to Transform Your Learning?
               </Title>
-              <Text size="lg" c={isDark ? 'gray.4' : 'dimmed'} maw={500}>
-                Join thousands of learners who are already creating personalized courses with AI. 
+              <Text style={{
+                fontSize: '18px',
+                color: isDark ? '#e6f7ff' : '#4c4c4c',
+                maxWidth: '500px',
+                margin: '0 auto'
+              }}>
+                Join thousands of learners who are already creating personalized courses with AI.
                 Start your learning journey today.
               </Text>
-              
+
               <Button
-                size="xl"
-                leftSection={<IconBrandGoogle size={24} />}
-                rightSection={<IconArrowRight size={20} />}
+                type="primary"
+                size="large"
+                icon={<GoogleOutlined />}
                 onClick={() => signIn('google')}
                 style={{
-                  background: 'linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-5) 100%)',
+                  background: 'linear-gradient(135deg, #1c7ed6 0%, #339af0 100%)',
                   border: 'none',
-                  fontSize: '1.125rem',
+                  fontSize: '18px',
                   fontWeight: 600,
-                  padding: '1rem 2rem'
+                  padding: '16px 32px',
+                  height: 'auto',
+                  borderRadius: '12px'
                 }}
-                radius="lg"
               >
                 Start Learning Now
+                <ArrowRightOutlined />
               </Button>
-            </Stack>
+            </Space>
           </Card>
-        </Stack>
-      </Container>
-    </Box>
+        </Space>
+      </Content>
+    </Layout>
   );
 }

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import 'antd/dist/reset.css';
 
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
@@ -20,7 +21,7 @@
   --primary-900: #1e3a8a;
   
   /* Neutral Colors */
-  --neutral-50: #f8fafc;
+  --neutral-50: #f8fafc; 
   --neutral-100: #f1f5f9;
   --neutral-200: #e2e8f0;
   --neutral-300: #cbd5e1;

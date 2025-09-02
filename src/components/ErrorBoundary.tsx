@@ -1,8 +1,8 @@
 "use client";
 
 import { Component, type ReactNode } from 'react';
-import { Alert, Button, Stack, Text, Title, Box, Group } from '@mantine/core';
-import { IconAlertCircle, IconRefresh, IconHome } from '@tabler/icons-react';
+import { Alert, Button, Space, Typography } from 'antd';
+import { ExclamationCircleOutlined, ReloadOutlined, HomeOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 
 interface Props {
@@ -14,6 +14,8 @@ interface State {
   hasError: boolean;
   error?: Error;
 }
+
+const { Title, Text } = Typography;
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -43,79 +45,74 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <Box 
+        <div
           className="min-h-screen flex items-center justify-center p-4"
           style={{
-            background: 'linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-gray-0) 100%)'
+            background: 'linear-gradient(135deg, #fff2f0 0%, #fafafa 100%)'
           }}
         >
-          <Stack gap="xl" align="center" maw={500} ta="center">
-            <Box
-              p="xl"
+          <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', textAlign: 'center', maxWidth: '500px' }}>
+            <div
               style={{
-                background: 'linear-gradient(135deg, var(--mantine-color-red-1) 0%, var(--mantine-color-red-0) 100%)',
-                borderRadius: 'var(--mantine-radius-xl)',
-                border: '2px solid var(--mantine-color-red-3)'
+                padding: '48px',
+                background: 'linear-gradient(135deg, #ffe7e6 0%, #fff2f0 100%)',
+                borderRadius: '12px',
+                border: '2px solid #ffccc7'
               }}
             >
-              <IconAlertCircle size={64} color="var(--mantine-color-red-6)" />
-            </Box>
-            
-            <Stack gap="md">
-              <Title order={1} size="2rem" c="red">
+              <ExclamationCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
+            </div>
+
+            <Space direction="vertical" size="middle">
+              <Title level={1} style={{ color: '#ff4d4f', fontSize: '2rem', margin: 0 }}>
                 Oops! Something went wrong
               </Title>
-              
-              <Text size="lg" c="dimmed" style={{ lineHeight: 1.6 }}>
+
+              <Text style={{ fontSize: '18px', color: '#8c8c8c', lineHeight: 1.6 }}>
                 We encountered an unexpected error. Don&apos;t worry, our team has been notified and is working to fix it.
               </Text>
-              
+
               {this.state.error && (
-                <Alert 
-                  color="red" 
-                  title="Error Details" 
-                  icon={<IconAlertCircle size={16} />}
-                  variant="light"
-                >
-                  <Text size="sm" style={{ fontFamily: 'monospace' }}>
-                    {this.state.error.message}
-                  </Text>
-                </Alert>
+                <Alert
+                  message="Error Details"
+                  description={
+                    <Text style={{ fontSize: '14px', fontFamily: 'monospace' }}>
+                      {this.state.error.message}
+                    </Text>
+                  }
+                  type="error"
+                  showIcon
+                />
               )}
-            </Stack>
-            
-            <Stack gap="md">
-              <Group justify="center" gap="md">
+            </Space>
+
+            <Space direction="vertical" size="middle">
+              <Space>
                 <Button
-                  leftSection={<IconRefresh size={16} />}
+                  icon={<ReloadOutlined />}
                   onClick={this.handleRetry}
-                  variant="filled"
-                  color="blue"
-                  size="lg"
-                  radius="md"
+                  type="primary"
+                  size="large"
                 >
                   Try Again
                 </Button>
-                
+
                 <Button
-                  component={Link}
-                  href="/dashboard"
-                  leftSection={<IconHome size={16} />}
-                  variant="light"
-                  color="gray"
-                  size="lg"
-                  radius="md"
+                  icon={<HomeOutlined />}
+                  size="large"
                 >
-                  Go to Dashboard
+                  <Link href="/dashboard" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    Go to Dashboard
+                  </Link>
                 </Button>
-              </Group>
-              
-              <Text size="sm" c="dimmed">
+              </Space>
+
+              <Text style={{ fontSize: '14px', color: '#8c8c8c' }}>
                 If the problem persists, please contact support
               </Text>
-            </Stack>
-          </Stack>
-        </Box>
+            </Space>
+          </Space>
+        </div>
       );
     }
 

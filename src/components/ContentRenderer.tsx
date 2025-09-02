@@ -1,35 +1,32 @@
 "use client";
 
-import { 
-  Stack, 
-  Title, 
-  Text, 
-  Button, 
-  Card, 
-  Group, 
-  Badge,
-  TypographyStylesProvider,
+import {
+  Space,
+  Typography,
+  Button,
+  Card,
+  Badge as AntBadge,
   Radio,
   Progress,
   Alert,
-  Divider,
-  ActionIcon,
   Tooltip,
-  useMantineColorScheme
-} from '@mantine/core';
-import { 
-  IconCheck, 
-  IconFileText, 
-  IconPlayerPlay, 
-  IconQuestionMark,
-  IconClock,
-  IconTrophy,
-  IconVolumeOff,
-  IconSun,
-  IconMoon,
-  IconMicrophone
-} from '@tabler/icons-react';
+  message
+} from 'antd';
+import {
+  CheckCircleOutlined,
+  FileTextOutlined,
+  PlayCircleOutlined,
+  QuestionCircleOutlined,
+  ClockCircleOutlined,
+  TrophyOutlined,
+  AudioOutlined,
+  SunOutlined,
+  MoonOutlined,
+  AudioMutedOutlined
+} from '@ant-design/icons';
 import { useState, useEffect, useRef } from 'react';
+
+const { Title, Text } = Typography;
 
 interface Module {
   id: string;
@@ -46,8 +43,7 @@ interface ContentRendererProps {
 
 export function ContentRenderer({ module, onComplete, isCompleted }: ContentRendererProps) {
   const [localCompleted, setLocalCompleted] = useState(isCompleted);
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark] = useState(false);
 
   useEffect(() => {
     setLocalCompleted(isCompleted);
@@ -62,13 +58,13 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
   const getModuleIcon = () => {
     switch (module.contentType) {
       case 'READING':
-        return <IconFileText size={20} />;
+        return <FileTextOutlined style={{ fontSize: '20px' }} />;
       case 'VIDEO':
-        return <IconPlayerPlay size={20} />;
+        return <PlayCircleOutlined style={{ fontSize: '20px' }} />;
       case 'QUIZ':
-        return <IconQuestionMark size={20} />;
+        return <QuestionCircleOutlined style={{ fontSize: '20px' }} />;
       default:
-        return <IconFileText size={20} />;
+        return <FileTextOutlined style={{ fontSize: '20px' }} />;
     }
   };
 
@@ -85,103 +81,98 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
     }
   };
 
-  return (
-    <Stack gap="md">
+    return (
+    <Space direction="vertical" size="middle">
       {/* Compact Module Header with Theme Toggle */}
-      <Card 
-        withBorder 
-        padding="lg" 
-        radius="md"
+      <Card
         style={{
-          background: isDark ? 'var(--mantine-color-dark-5)' : `linear-gradient(135deg, var(--mantine-color-${getModuleColor()}-0) 0%, var(--mantine-color-gray-0) 100%)`,
-          borderColor: localCompleted ? (isDark ? 'var(--mantine-color-green-8)' : 'var(--mantine-color-green-3)') : (isDark ? 'var(--mantine-color-${getModuleColor()}-9)' : `var(--mantine-color-${getModuleColor()}-3)`),
-          borderWidth: '1px'
+          background: isDark ? '#1a1a1a' : `linear-gradient(135deg, ${getModuleColor() === 'blue' ? '#e6f7ff' : getModuleColor() === 'red' ? '#fff2f0' : getModuleColor() === 'green' ? '#f6ffed' : '#fafafa'} 0%, #ffffff 100%)`,
+          borderColor: localCompleted ? '#52c41a' : (getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'),
         }}
       >
-        <Group justify="space-between" align="center">
-          <Group gap="md" align="center">
-            <div style={{ 
-              padding: '6px', 
-              borderRadius: '50%', 
-              backgroundColor: isDark ? 'var(--mantine-color-dark-6)' : `var(--mantine-color-${getModuleColor()}-1)`,
-              border: isDark ? '1px solid var(--mantine-color-dark-4)' : `1px solid var(--mantine-color-${getModuleColor()}-3)`
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Space align="center">
+            <div style={{
+              padding: '8px',
+              borderRadius: '50%',
+              backgroundColor: isDark ? '#2a2a2a' : (getModuleColor() === 'blue' ? '#bae7ff' : getModuleColor() === 'red' ? '#ffccc7' : getModuleColor() === 'green' ? '#d9f7be' : '#f0f0f0'),
+              border: isDark ? '1px solid #404040' : `1px solid ${getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'}`
             }}>
               {getModuleIcon()}
             </div>
-            
-            <Stack gap={4}>
-              <Group gap="sm">
-                <Badge 
-                  color={getModuleColor()} 
-                  variant="light" 
-                  size="sm"
-                  leftSection={getModuleIcon()}
-                >
-                {module.contentType.toLowerCase()}
-              </Badge>
-                
-              {localCompleted && (
-                  <Badge 
-                    color="green" 
-                    variant="filled" 
-                    size="sm"
-                    leftSection={<IconTrophy size={12} />}
-                  >
-                    ✨ Done
-                </Badge>
-              )}
-            </Group>
-            
-              <Title 
-                order={2} 
-                size="1.5rem" 
-                fw={600}
-                c={isDark ? 'white' : 'dark'}
+
+            <Space direction="vertical" size={4}>
+              <Space>
+                <AntBadge
+                  count={module.contentType.toLowerCase()}
+                  style={{
+                    backgroundColor: getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#6b7280'
+                  }}
+                />
+
+                {localCompleted && (
+                  <AntBadge
+                    count="✨ Done"
+                    style={{ backgroundColor: '#52c41a' }}
+                  />
+                )}
+              </Space>
+
+              <Title
+                level={2}
+                style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 600,
+                  color: isDark ? 'white' : 'black',
+                  margin: 0
+                }}
               >
                 {module.title}
               </Title>
-          </Stack>
-          </Group>
+            </Space>
+          </Space>
 
-          <Group gap="xs">
+          <Space>
             <ThemeToggle />
-          <Button
-              size="md"
-              color={localCompleted ? "green" : getModuleColor()}
-            variant={localCompleted ? "light" : "filled"}
-              leftSection={localCompleted ? <IconTrophy size={16} /> : <IconClock size={16} />}
-            onClick={handleToggleComplete}
-          >
+            <Button
+              type={localCompleted ? "default" : "primary"}
+              icon={localCompleted ? <TrophyOutlined /> : <ClockCircleOutlined />}
+              onClick={handleToggleComplete}
+              style={{
+                backgroundColor: localCompleted ? '#52c41a' : undefined,
+                borderColor: localCompleted ? '#52c41a' : undefined
+              }}
+            >
               {localCompleted ? "✅ Done" : "Complete"}
-          </Button>
-          </Group>
-        </Group>
+            </Button>
+          </Space>
+        </div>
       </Card>
 
       {/* Streamlined Content Area */}
-      <div 
-        style={{ 
+      <div
+        style={{
           minHeight: '50vh',
-          background: isDark 
+          background: isDark
             ? 'rgba(31, 41, 55, 0.3)'
             : 'rgba(249, 250, 251, 0.5)',
           borderRadius: '8px',
-          padding: '1rem'
+          padding: '16px'
         }}
       >
         {module.contentType === 'READING' && (
           <ReadingContent content={module.content} />
         )}
-        
+
         {module.contentType === 'VIDEO' && (
           <VideoContent content={module.content} />
         )}
-        
+
         {module.contentType === 'QUIZ' && (
           <QuizContent content={module.content} />
         )}
       </div>
-    </Stack>
+    </Space>
   );
 }
 
@@ -268,50 +259,53 @@ function CompactTextToSpeech({ text }: { text: string }) {
   }
 
   return (
-    <Tooltip label={isPlaying ? "Stop AI audio" : "Listen with ElevenLabs AI voice"}>
-      <ActionIcon
-        size="sm"
-        variant="light"
+    <Tooltip title={isPlaying ? "Stop AI audio" : "Listen with ElevenLabs AI voice"}>
+      <Button
+        size="small"
+        type="text"
         loading={isLoading}
         onClick={handleElevenLabsTTS}
-        color={isPlaying ? "red" : "indigo"}
-      >
-        {isPlaying ? <IconVolumeOff size={14} /> : <IconMicrophone size={14} />}
-      </ActionIcon>
+        icon={isPlaying ? <AudioMutedOutlined /> : <AudioOutlined />}
+        style={{ color: isPlaying ? '#ff4d4f' : '#1c7ed6' }}
+      />
     </Tooltip>
   );
 }
 
 // Theme Toggle Component
 function ThemeToggle() {
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const dark = colorScheme === 'dark';
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    message.info(isDark ? 'Switched to light mode' : 'Switched to dark mode');
+  };
 
   return (
-    <Tooltip label={dark ? "Switch to light mode" : "Switch to dark mode"}>
-      <ActionIcon
-        variant="light"
-        color={dark ? 'yellow' : 'blue'}
-        onClick={() => toggleColorScheme()}
-        size="sm"
-      >
-        {dark ? <IconSun size={14} /> : <IconMoon size={14} />}
-      </ActionIcon>
+    <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+      <Button
+        type="text"
+        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+        onClick={toggleTheme}
+        size="small"
+      />
     </Tooltip>
   );
 }
 
 // Reading Content Component with Reduced Spacing
 function ReadingContent({ content }: { content: unknown }) {
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   if (!content || typeof content !== 'object' || content === null) {
     return (
-      <Alert color="yellow" title="Content Not Available">
-        Reading content is being generated. Please check back later.
-      </Alert>
+      <Alert
+        message="Content Not Available"
+        description="Reading content is being generated. Please check back later."
+        type="warning"
+        showIcon
+      />
     );
   }
 
@@ -324,50 +318,47 @@ function ReadingContent({ content }: { content: unknown }) {
     };
 
     return (
-      <Stack gap="md">
+      <Space direction="vertical" size="middle">
         {/* Compact Header with Controls */}
-        <Group justify="space-between" align="center" p="sm" style={{
-          background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
-          borderRadius: '8px',
-          border: isDark ? '1px solid var(--mantine-color-dark-4)' : '1px solid var(--mantine-color-gray-3)'
+        <Card size="small" style={{
+          background: isDark ? '#1a1a1a' : '#fafafa',
+          borderColor: isDark ? '#404040' : '#d9d9d9'
         }}>
-          <Group gap="sm">
-            <Badge color="blue" variant="light" size="xs" leftSection={<IconClock size={10} />}>
-              {blogContent.readingTime}
-            </Badge>
-            <Badge color="green" variant="light" size="xs">
-              📖 Article
-            </Badge>
-          </Group>
-          
-          <Group gap="xs">
-            <CompactTextToSpeech text={blogContent.blogContent} />
-            <ThemeToggle />
-          </Group>
-        </Group>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Space>
+              <AntBadge
+                count={blogContent.readingTime}
+                style={{ backgroundColor: '#1c7ed6' }}
+              />
+              <AntBadge
+                count="📖 Article"
+                style={{ backgroundColor: '#52c41a' }}
+              />
+            </Space>
+
+            <Space>
+              <CompactTextToSpeech text={blogContent.blogContent} />
+              <ThemeToggle />
+            </Space>
+          </div>
+        </Card>
 
         {/* Compact Summary */}
         {blogContent.summary && (
-          <Alert 
-            color="blue" 
-            variant="light"
-            title="Summary" 
-            icon={<IconFileText size={14} />}
-            styles={{
-              root: { padding: '12px' },
-              title: { fontSize: '14px' },
-              message: { fontSize: '13px' }
-            }}
-          >
-            {blogContent.summary}
-          </Alert>
+          <Alert
+            message="Summary"
+            description={blogContent.summary}
+            type="info"
+            showIcon
+            style={{ padding: '12px' }}
+          />
         )}
 
         {/* Optimized Blog Content */}
-        <TypographyStylesProvider>
-          <div 
+        <div>
+          <div
             ref={contentRef}
-            style={{ 
+            style={{
               lineHeight: 1.6,
               fontSize: '16px',
               color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
@@ -375,13 +366,13 @@ function ReadingContent({ content }: { content: unknown }) {
               textJustify: 'inter-word',
               hyphens: 'auto',
             }}
-            dangerouslySetInnerHTML={{ 
+            dangerouslySetInnerHTML={{
               __html: blogContent.blogContent
                 .replace(/^# /gm, `<h1 style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 1rem 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
                 .replace(/\n# /g, `</h1>\n<h1 style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 1rem 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
                 .replace(/^## /gm, `<h2 style="font-size: 1.4rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
                 .replace(/\n## /g, `</h2>\n<h2 style="font-size: 1.4rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
-                .replace(/^### /gm, `<h3 style="font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)  
+                .replace(/^### /gm, `<h3 style="font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
                 .replace(/\n### /g, `</h3>\n<h3 style="font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
                 .replace(/\*\*(.*?)\*\*/g, `<strong style="font-weight: 600; color: ${isDark ? '#fff' : '#000'};">$1</strong>`)
                 .replace(/\*(.*?)\*/g, `<em style="font-style: italic; color: ${isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};">$1</em>`)
@@ -397,8 +388,8 @@ function ReadingContent({ content }: { content: unknown }) {
                 .replace(/<\/li><\/p>/g, '</li></ul>')
             }}
           />
-        </TypographyStylesProvider>
-      </Stack>
+        </div>
+      </Space>
     );
   }
 
@@ -411,64 +402,56 @@ function ReadingContent({ content }: { content: unknown }) {
   };
 
   return (
-    <Stack gap="lg">
+    <Space direction="vertical" size="large">
       {readingContent.introduction && (
-        <Alert color="blue" title="Introduction" icon={<IconFileText size={16} />}>
-          {readingContent.introduction}
-        </Alert>
+        <Alert message="Introduction" description={readingContent.introduction} type="info" showIcon />
       )}
 
-      <TypographyStylesProvider>
-        <Stack gap="xl">
+      <div>
+        <Space direction="vertical" size="large">
           {readingContent.sections.map((section, index: number) => (
             <div key={index}>
-              <Title order={3} mb="md">{section.title}</Title>
+              <Title level={3} style={{ marginBottom: '16px' }}>{section.title}</Title>
               <Text style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
                 {section.content}
               </Text>
-              {index < readingContent.sections.length - 1 && <Divider my="xl" />}
             </div>
           ))}
-        </Stack>
-      </TypographyStylesProvider>
+        </Space>
+      </div>
 
       {readingContent.keyTakeaways && (
-        <Card withBorder padding="md" radius="md" style={{ backgroundColor: 'var(--mantine-color-green-0)' }}>
-          <Title order={4} mb="sm" c="green">Key Takeaways</Title>
-          <Stack gap="xs">
+        <Card bordered style={{ backgroundColor: '#f6ffed', borderColor: '#b7eb8f' }}>
+          <Title level={4} style={{ marginBottom: '12px', color: '#52c41a' }}>Key Takeaways</Title>
+          <Space direction="vertical" size="small">
             {readingContent.keyTakeaways.map((takeaway: string, index: number) => (
-              <Group key={index} align="flex-start" gap="sm">
-                <IconCheck size={16} color="var(--mantine-color-green-6)" style={{ marginTop: 2 }} />
-                <Text size="sm">{takeaway}</Text>
-              </Group>
+              <Space key={index} align="start">
+                <CheckCircleOutlined style={{ color: '#52c41a', marginTop: 2 }} />
+                <Text>{takeaway}</Text>
+              </Space>
             ))}
-          </Stack>
+          </Space>
         </Card>
       )}
-    </Stack>
+    </Space>
     );
   }
 
   return (
-    <Alert color="yellow" title="Content Not Available">
-      Reading content is being generated. Please check back later.
-    </Alert>
+    <Alert message="Content Not Available" description="Reading content is being generated. Please check back later." type="warning" showIcon />
   );
 }
 
-// Video Content Component  
+// Video Content Component
 function VideoContent({ content }: { content: unknown }) {
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark] = useState(false);
 
   if (!content || typeof content !== 'object' || content === null) {
     return (
-      <Stack gap="lg" align="center" justify="center" style={{ minHeight: '50vh' }}>
-        <IconPlayerPlay size={64} color={isDark ? 'red.4' : 'red.5'} />
-        <Alert color="yellow" title="Video Not Available">
-          Video content is being prepared. Please check back later.
-        </Alert>
-      </Stack>
+      <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+        <PlayCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
+        <Alert message="Video Not Available" description="Video content is being prepared. Please check back later." type="warning" showIcon />
+      </Space>
     );
   }
 
@@ -484,25 +467,23 @@ function VideoContent({ content }: { content: unknown }) {
     };
 
     return (
-      <Stack gap="lg">
-        <Stack gap="lg" align="center" justify="center" style={{ minHeight: '20vh' }}>
-          <IconPlayerPlay size={64} color="var(--mantine-color-red-5)" />
-          <Title order={3} ta="center">{comingSoonContent.message}</Title>
-        </Stack>
+      <Space direction="vertical" size="large">
+        <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '20vh' }}>
+          <PlayCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
+          <Title level={3} style={{ textAlign: 'center' }}>{comingSoonContent.message}</Title>
+        </Space>
 
-        <Alert color="blue" title="Video Coming Soon" icon={<IconPlayerPlay size={16} />}>
-          <Stack gap="sm">
+        <Alert message="Video Coming Soon" description={
+          <Space direction="vertical" size="small">
             <Text>{comingSoonContent.description}</Text>
-            <Group gap="md">
-              <Badge color="red" variant="light" leftSection={<IconClock size={12} />}>
-                {comingSoonContent.expectedDuration}
-              </Badge>
-            </Group>
-          </Stack>
-        </Alert>
+            <Space>
+              <AntBadge count={comingSoonContent.expectedDuration} style={{ backgroundColor: '#ff4d4f' }} />
+            </Space>
+          </Space>
+        } type="info" showIcon />
 
         {/* Coming soon content with markdown support */}
-        <TypographyStylesProvider>
+        <div>
           <div 
             style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
             dangerouslySetInnerHTML={{ 
@@ -531,8 +512,8 @@ function VideoContent({ content }: { content: unknown }) {
                 .replace(/📝/g, '📝')
             }}
           />
-        </TypographyStylesProvider>
-      </Stack>
+        </div>
+      </Space>
     );
   }
 
@@ -545,31 +526,31 @@ function VideoContent({ content }: { content: unknown }) {
   };
 
   return (
-    <Stack gap="lg" align="center" justify="center" style={{ minHeight: '50vh' }}>
-      <IconPlayerPlay size={64} color="var(--mantine-color-red-5)" />
-      <Title order={3} ta="center" c={isDark ? 'white' : 'dark'}>Video Content</Title>
-      
+    <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+      <PlayCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
+      <Title level={3} style={{ textAlign: 'center', color: isDark ? 'white' : 'black' }}>Video Content</Title>
+
       {videoContent?.videoUrl ? (
         <div style={{ width: '100%', maxWidth: '800px', aspectRatio: '16/9', backgroundColor: '#000', borderRadius: '8px' }}>
           {/* Video player would go here */}
-          <Text c={isDark ? 'gray.3' : 'white'} ta="center" style={{ paddingTop: '45%' }}>
+          <Text style={{ color: isDark ? '#d1d5db' : 'white', textAlign: 'center', paddingTop: '45%' }}>
             Video Player Placeholder
           </Text>
         </div>
       ) : (
-        <Alert color="blue" title="Video Coming Soon" style={{ maxWidth: '500px' }}>
-          <Stack gap="sm">
-            <Text c={isDark ? 'gray.3' : 'dimmed'}>This video content is being prepared for you.</Text>
-            {videoContent?.title && 
-              <Text size="sm" c={isDark ? 'gray.5' : 'dimmed'}>Topic: {videoContent.title}</Text>}
-            {videoContent?.duration && 
-              <Text size="sm" c={isDark ? 'gray.5' : 'dimmed'}>Estimated Duration: {videoContent.duration}</Text>}
-            {videoContent?.description && 
-              <Text size="sm">{videoContent.description}</Text>}
-          </Stack>
-        </Alert>
+        <Alert message="Video Coming Soon" description={
+          <Space direction="vertical" size="small" style={{ maxWidth: '500px' }}>
+            <Text style={{ color: isDark ? '#d1d5db' : '#8c8c8c' }}>This video content is being prepared for you.</Text>
+            {videoContent?.title &&
+              <Text style={{ fontSize: '14px', color: isDark ? '#9ca3af' : '#8c8c8c' }}>Topic: {videoContent.title}</Text>}
+            {videoContent?.duration &&
+              <Text style={{ fontSize: '14px', color: isDark ? '#9ca3af' : '#8c8c8c' }}>Estimated Duration: {videoContent.duration}</Text>}
+            {videoContent?.description &&
+              <Text style={{ fontSize: '14px' }}>{videoContent.description}</Text>}
+          </Space>
+        } type="info" showIcon />
       )}
-    </Stack>
+    </Space>
   );
 }
 
@@ -578,31 +559,28 @@ function QuizContent({ content }: { content: unknown }) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark] = useState(false);
 
   if (!content || typeof content !== 'object' || content === null) {
     return (
-      <Alert color="yellow" title="Quiz Not Available">
-        Quiz content is being generated. Please check back later.
-      </Alert>
+      <Alert message="Quiz Not Available" description="Quiz content is being generated. Please check back later." type="warning" showIcon />
     );
   }
 
   // Check for questions array first
   if (!('questions' in content) || !Array.isArray(content.questions)) {
     return (
-      <Stack gap="lg" align="center" justify="center" style={{ minHeight: '40vh' }}>
-        <IconQuestionMark size={64} color="var(--mantine-color-green-5)" />
-        <Alert color="yellow" title="Quiz Not Available" style={{ maxWidth: '500px' }}>
-          <Stack gap="sm">
+      <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh' }}>
+        <QuestionCircleOutlined style={{ fontSize: '64px', color: '#52c41a' }} />
+        <Alert message="Quiz Not Available" description={
+          <Space direction="vertical" size="small" style={{ maxWidth: '500px' }}>
             <Text>Quiz content is being generated. Please check back later.</Text>
-            <Text size="sm" c="dimmed">
+            <Text style={{ fontSize: '14px', color: '#8c8c8c' }}>
               We&apos;re creating engaging questions to test your understanding of this topic.
             </Text>
-          </Stack>
-        </Alert>
-      </Stack>
+          </Space>
+        } type="warning" showIcon />
+      </Space>
     );
   }
 
@@ -654,283 +632,266 @@ function QuizContent({ content }: { content: unknown }) {
   const allQuestionsAnswered = normalizedQuestions.every((_: unknown, index: number) => selectedAnswers[index] !== undefined);
 
   return (
-    <Stack gap="lg">
+    <Space direction="vertical" size="large">
       {/* Quiz Header with Meta Information */}
-      <Card withBorder padding="lg" radius="md" style={{ background: isDark ? 'var(--mantine-color-dark-5)' : 'linear-gradient(135deg, var(--mantine-color-green-0) 0%, var(--mantine-color-blue-0) 100%)' }}>
-        <Stack gap="sm">
+      <Card bordered bodyStyle={{ padding: '24px' }} style={{ background: isDark ? '#1a1a1a' : 'linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%)' }}>
+        <Space direction="vertical" size="small">
       {quizContent.introduction && (
-            <Text size="lg" fw={500} c={isDark ? 'green.3' : 'green.8'}>
+            <Text style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#d9f7be' : '#52c41a' }}>
           {quizContent.introduction}
             </Text>
           )}
-          
-          <Group gap="md">
-            <Badge color="green" variant="light" leftSection={<IconQuestionMark size={12} />}>
-              {quizContent.totalQuestions ?? normalizedQuestions.length} Questions
-            </Badge>
+
+          <Space>
+            <AntBadge count={`${quizContent.totalQuestions ?? normalizedQuestions.length} Questions`} style={{ backgroundColor: '#52c41a' }} />
             {quizContent.estimatedTime && (
-              <Badge color="blue" variant="light" leftSection={<IconClock size={12} />}>
-                {quizContent.estimatedTime}
-              </Badge>
+              <AntBadge count={quizContent.estimatedTime} style={{ backgroundColor: '#1c7ed6' }} />
             )}
             {quizContent.difficulty && (
-              <Badge color="orange" variant="light">
-                {quizContent.difficulty}
-              </Badge>
+              <AntBadge count={quizContent.difficulty} style={{ backgroundColor: '#fa8c16' }} />
             )}
-          </Group>
-          
+          </Space>
+
           {!showResults && (
-            <Group gap="sm">
-              <Text size="sm" c="dimmed">
+            <Space>
+              <Text style={{ fontSize: '14px', color: '#8c8c8c' }}>
                 Progress: {Object.keys(selectedAnswers).length} / {normalizedQuestions.length} answered
               </Text>
-              <Progress 
-                value={(Object.keys(selectedAnswers).length / normalizedQuestions.length) * 100} 
-                size="sm" 
-                color="green"
+              <Progress
+                percent={(Object.keys(selectedAnswers).length / normalizedQuestions.length) * 100}
+                size="small"
+                strokeColor="#52c41a"
                 style={{ flex: 1, maxWidth: '200px' }}
               />
-            </Group>
+            </Space>
           )}
-        </Stack>
+        </Space>
       </Card>
 
       {!showResults ? (
         <>
-          <Stack gap="xl">
+          <Space direction="vertical" size="large">
             {normalizedQuestions.map((question, questionIndex: number) => (
-              <Card 
-                key={questionIndex} 
-                withBorder 
-                padding="lg" 
-                radius="md"
+              <Card
+                key={questionIndex}
+                bordered
+                bodyStyle={{ padding: '24px' }}
                 style={{
-                  background: isDark ? (selectedAnswers[questionIndex] ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-dark-6)') : (selectedAnswers[questionIndex] ? 'var(--mantine-color-green-0)' : 'var(--mantine-color-gray-0)'),
-                  borderColor: selectedAnswers[questionIndex] ? 'var(--mantine-color-green-3)' : (isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'),
+                  background: isDark ? (selectedAnswers[questionIndex] ? '#262626' : '#1a1a1a') : (selectedAnswers[questionIndex] ? '#f6ffed' : '#fafafa'),
+                  borderColor: selectedAnswers[questionIndex] ? '#b7eb8f' : (isDark ? '#404040' : '#d9d9d9'),
                   transition: 'none'
                 }}
               >
-                <Stack gap="md">
-                  <Group align="flex-start" gap="sm">
-                    <Badge 
-                      color={selectedAnswers[questionIndex] ? "green" : "gray"} 
-                      variant="light" 
-                      size="lg"
-                      leftSection={selectedAnswers[questionIndex] ? <IconCheck size={12} /> : null}
-                    >
-                      Q{questionIndex + 1}
-                    </Badge>
-                    <Text fw={500} size="lg" style={{ flex: 1 }} c={isDark ? 'white' : 'dark'}>
+                <Space direction="vertical" size="middle">
+                  <Space align="start">
+                    <AntBadge
+                      count={`Q${questionIndex + 1}`}
+                      style={{
+                        backgroundColor: selectedAnswers[questionIndex] ? '#52c41a' : '#d9d9d9',
+                        color: selectedAnswers[questionIndex] ? 'white' : 'black'
+                      }}
+                    />
+                    <Text style={{ flex: 1, fontWeight: 500, fontSize: '18px', color: isDark ? 'white' : 'black' }}>
                       {question.question}
                     </Text>
-                  </Group>
+                  </Space>
 
                   <Radio.Group
                     value={selectedAnswers[questionIndex] ?? ''}
-                    onChange={(value) => handleAnswerSelect(questionIndex, value)}
+                    onChange={(e) => handleAnswerSelect(questionIndex, String(e.target.value))}
                   >
-                    <Stack gap="sm" ml="md">
+                    <Space direction="vertical" size="small" style={{ marginLeft: '16px' }}>
                       {question.options.map((option: string, optionIndex: number) => (
-                        <Card 
-                          key={optionIndex} 
-                          padding="sm" 
-                          radius="sm" 
-                          style={{ 
+                        <Card
+                          key={optionIndex}
+                          bodyStyle={{ padding: '12px' }}
+                          style={{
                             cursor: 'pointer',
-                            background: isDark ? (selectedAnswers[questionIndex] === option ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-dark-6)') : (selectedAnswers[questionIndex] === option ? 'var(--mantine-color-green-1)' : 'transparent'),
-                            border: selectedAnswers[questionIndex] === option ? '2px solid var(--mantine-color-green-4)' : (isDark ? '1px solid var(--mantine-color-dark-4)' : '1px solid var(--mantine-color-gray-3)'),
+                            background: isDark ? (selectedAnswers[questionIndex] === option ? '#262626' : '#1a1a1a') : (selectedAnswers[questionIndex] === option ? '#f0f9ff' : 'transparent'),
+                            border: selectedAnswers[questionIndex] === option ? '2px solid #52c41a' : (isDark ? '1px solid #404040' : '1px solid #d9d9d9'),
                             transition: 'none'
                           }}
                           onClick={() => handleAnswerSelect(questionIndex, option)}
                         >
-                          <Radio 
-                            value={option} 
-                            label={option} 
-                            size="md"
-                            color={isDark ? 'white' : 'dark'}
-                          />
+                          <Radio
+                            value={option}
+                          >
+                            {option}
+                          </Radio>
                         </Card>
                       ))}
-                    </Stack>
+                    </Space>
                   </Radio.Group>
-                </Stack>
+                </Space>
               </Card>
             ))}
-          </Stack>
+          </Space>
 
-          <Group justify="center" mt="xl">
+          <Space style={{ display: 'flex', justifyContent: 'center', marginTop: '48px' }}>
             <Button
-              size="xl"
+              size="large"
               onClick={handleSubmitQuiz}
               disabled={!allQuestionsAnswered}
-              leftSection={<IconTrophy size={20} />}
-              color={allQuestionsAnswered ? "green" : "gray"}
+              icon={<TrophyOutlined />}
+              style={{
+                backgroundColor: allQuestionsAnswered ? '#52c41a' : undefined,
+                borderColor: allQuestionsAnswered ? '#52c41a' : undefined
+              }}
             >
               {allQuestionsAnswered ? 'Submit Quiz & See Results!' : `Answer ${normalizedQuestions.length - Object.keys(selectedAnswers).length} more questions`}
             </Button>
-          </Group>
+          </Space>
         </>
       ) : (
-        <Stack gap="lg" align="center">
+        <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {/* Enhanced Results Card */}
-          <Card 
-            withBorder 
-            padding="xl" 
-            radius="md" 
-            style={{ 
-              textAlign: 'center', 
+          <Card
+            bordered
+            bodyStyle={{ padding: '48px' }}
+            style={{
+              textAlign: 'center',
               maxWidth: '600px',
-              background: isDark ? (score === normalizedQuestions.length ? 'var(--mantine-color-dark-5)' : score > normalizedQuestions.length / 2 ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-dark-6)') : (score === normalizedQuestions.length ? 'var(--mantine-color-green-1)' : score > normalizedQuestions.length / 2 ? 'var(--mantine-color-yellow-1)' : 'var(--mantine-color-red-1)')
+              background: isDark ? (score === normalizedQuestions.length ? '#262626' : score > normalizedQuestions.length / 2 ? '#1a1a1a' : '#141414') : (score === normalizedQuestions.length ? '#f6ffed' : score > normalizedQuestions.length / 2 ? '#fff7e6' : '#fff2f0')
             }}
           >
-            <Stack gap="lg" align="center">
+            <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{ position: 'relative' }}>
-                <IconTrophy size={64} color={
-                  score === normalizedQuestions.length ? 'var(--mantine-color-green-6)' :
-                  score > normalizedQuestions.length / 2 ? 'var(--mantine-color-yellow-6)' :
-                  'var(--mantine-color-red-6)'
-                } />
+                <TrophyOutlined style={{
+                  fontSize: '64px',
+                  color: score === normalizedQuestions.length ? '#52c41a' :
+                         score > normalizedQuestions.length / 2 ? '#fa8c16' : '#ff4d4f'
+                }} />
                 {score === normalizedQuestions.length && (
-                  <Text size="4xl" style={{ position: 'absolute', top: '-10px', right: '-10px' }}>🎉</Text>
+                  <Text style={{ fontSize: '36px', position: 'absolute', top: '-10px', right: '-10px' }}>🎉</Text>
                 )}
               </div>
-              
-              <Title order={1} size="2rem" fw={700} c={isDark ? 'white' : 'dark'}>
-                {score === normalizedQuestions.length 
-                  ? "Perfect Score! 🌟" 
-                  : score > normalizedQuestions.length / 2 
-                    ? "Great Job! 👍" 
+
+              <Title level={1} style={{ fontSize: '2rem', fontWeight: 700, color: isDark ? 'white' : 'black' }}>
+                {score === normalizedQuestions.length
+                  ? "Perfect Score! 🌟"
+                  : score > normalizedQuestions.length / 2
+                    ? "Great Job! 👍"
                     : "Keep Learning! 💪"}
               </Title>
               
-              <Group gap="xl" justify="center">
-                <Stack align="center" gap="xs">
-                  <Text size="4xl" fw={900} c={isDark ? (score === normalizedQuestions.length ? 'green.3' : score > normalizedQuestions.length / 2 ? 'yellow.3' : 'red.3') : (score === normalizedQuestions.length ? 'green' : score > normalizedQuestions.length / 2 ? 'yellow.7' : 'red')}>
+              <Space style={{ gap: '48px', justifyContent: 'center' }}>
+                <Space direction="vertical" size="small" style={{ display: 'flex', alignItems: 'center' }}>
+                  <Text style={{
+                    fontSize: '36px',
+                    fontWeight: 900,
+                    color: isDark ? (score === normalizedQuestions.length ? '#d9f7be' : score > normalizedQuestions.length / 2 ? '#ffe58f' : '#ffccc7') : (score === normalizedQuestions.length ? '#52c41a' : score > normalizedQuestions.length / 2 ? '#fa8c16' : '#ff4d4f')
+                  }}>
                     {score}
                   </Text>
-                  <Text size="lg" fw={500} c="dimmed">Correct</Text>
-                </Stack>
-                
-                <Text size="3xl" c="dimmed" fw={300}>/</Text>
-                
-                <Stack align="center" gap="xs">
-                  <Text size="4xl" fw={900}>
+                  <Text style={{ fontSize: '18px', fontWeight: 500, color: '#8c8c8c' }}>Correct</Text>
+                </Space>
+
+                <Text style={{ fontSize: '28px', color: '#8c8c8c', fontWeight: 300 }}>/</Text>
+
+                <Space direction="vertical" size="small" style={{ display: 'flex', alignItems: 'center' }}>
+                  <Text style={{ fontSize: '36px', fontWeight: 900 }}>
                     {normalizedQuestions.length}
                   </Text>
-                  <Text size="lg" fw={500} c="dimmed">Total</Text>
-                </Stack>
-              </Group>
+                  <Text style={{ fontSize: '18px', fontWeight: 500, color: '#8c8c8c' }}>Total</Text>
+                </Space>
+              </Space>
 
-              <Stack gap="sm" style={{ width: '100%' }}>
-                <Text size="lg" fw={500} c="dimmed">
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Text style={{ fontSize: '18px', fontWeight: 500, color: '#8c8c8c' }}>
                   Score: {Math.round((score / normalizedQuestions.length) * 100)}%
                 </Text>
-              <Progress 
-                  value={(score / normalizedQuestions.length) * 100} 
-                  size="xl" 
-                  radius="xl"
-                  color={score === normalizedQuestions.length ? 'green' : score > normalizedQuestions.length / 2 ? 'yellow' : 'red'}
-                style={{ width: '100%' }}
-              />
-              </Stack>
+              <Progress
+                  percent={(score / normalizedQuestions.length) * 100}
+                  strokeColor={score === normalizedQuestions.length ? '#52c41a' : score > normalizedQuestions.length / 2 ? '#fa8c16' : '#ff4d4f'}
+                  style={{ width: '100%' }}
+                />
+              </Space>
 
-              <Text size="xl" fw={500} ta="center" style={{ maxWidth: '400px' }}>
-                {score === normalizedQuestions.length 
-                  ? "Outstanding! You&apos;ve mastered this topic completely! 🎓" 
-                  : score > normalizedQuestions.length / 2 
-                    ? "Well done! You have a solid understanding of the material. 📚" 
+              <Text style={{ fontSize: '20px', fontWeight: 500, textAlign: 'center', maxWidth: '400px' }}>
+                {score === normalizedQuestions.length
+                  ? "Outstanding! You&apos;ve mastered this topic completely! 🎓"
+                  : score > normalizedQuestions.length / 2
+                    ? "Well done! You have a solid understanding of the material. 📚"
                     : "Don&apos;t worry! Review the material and try again. Every attempt makes you stronger! 🚀"}
               </Text>
-            </Stack>
+            </Space>
           </Card>
 
-          <Group gap="md">
-            <Button 
-              variant="outline" 
-              size="lg"
-              leftSection={<IconQuestionMark size={16} />}
+          <Space>
+            <Button
               onClick={resetQuiz}
+              icon={<QuestionCircleOutlined />}
             >
               Retake Quiz
             </Button>
-          </Group>
+          </Space>
 
           {/* Enhanced Answer Review */}
-          <Card withBorder padding="xl" radius="md" style={{ width: '100%', maxWidth: '900px', background: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)' }}>
-            <Stack gap="lg">
-              <Group justify="space-between" align="center">
-                <Title order={2} c={isDark ? 'white' : 'dark'}>📝 Answer Review</Title>
-                <Badge size="lg" color="blue" variant="light">
-                  {score}/{normalizedQuestions.length} Correct
-                </Badge>
-              </Group>
-              
-              <Stack gap="lg">
+          <Card bordered bodyStyle={{ padding: '48px' }} style={{ width: '100%', maxWidth: '900px', background: isDark ? '#1a1a1a' : '#fafafa' }}>
+            <Space direction="vertical" size="large">
+              <Space style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <Title level={2} style={{ color: isDark ? 'white' : 'black' }}>📝 Answer Review</Title>
+                <AntBadge count={`${score}/${normalizedQuestions.length} Correct`} style={{ backgroundColor: '#1c7ed6' }} />
+              </Space>
+
+              <Space direction="vertical" size="large">
                 {normalizedQuestions.map((question, index: number) => {
                   const isCorrect = selectedAnswers[index] === question.correctAnswer;
                   return (
-                    <Card 
-                      key={index} 
-                      padding="lg" 
-                      radius="md" 
-                      withBorder
+                    <Card
+                      key={index}
+                      bodyStyle={{ padding: '24px' }}
+                      bordered
                       style={{
-                        backgroundColor: isDark ? (isCorrect ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-dark-7)') : (isCorrect ? 'var(--mantine-color-green-0)' : 'var(--mantine-color-red-0)'),
-                        borderColor: isCorrect ? (isDark ? 'var(--mantine-color-green-9)' : 'var(--mantine-color-green-3)') : (isDark ? 'var(--mantine-color-red-9)' : 'var(--mantine-color-red-3)'),
+                        backgroundColor: isDark ? (isCorrect ? '#262626' : '#141414') : (isCorrect ? '#f6ffed' : '#fff2f0'),
+                        borderColor: isCorrect ? (isDark ? '#52c41a' : '#b7eb8f') : (isDark ? '#ff4d4f' : '#ffccc7'),
                         borderWidth: '2px'
                       }}
                     >
-            <Stack gap="md">
-                        <Group gap="sm" align="flex-start">
-                          <Badge 
-                            color={isCorrect ? "green" : "red"} 
-                            size="lg"
-                            leftSection={
-                              isCorrect ? 
-                                <IconCheck size={14} /> : 
-                                <Text size="sm">✗</Text>
-                            }
-                          >
-                            Q{index + 1}
-                          </Badge>
-                          <Text fw={600} size="lg" style={{ flex: 1 }} c={isDark ? 'white' : 'dark'}>
+            <Space direction="vertical" size="middle">
+                        <Space align="start" style={{ gap: '12px' }}>
+                          <AntBadge
+                            count={`Q${index + 1}`}
+                            style={{
+                              backgroundColor: isCorrect ? '#52c41a' : '#ff4d4f',
+                              color: 'white'
+                            }}
+                          />
+                          <Text style={{ flex: 1, fontWeight: 600, fontSize: '18px', color: isDark ? 'white' : 'black' }}>
                             {question.question}
                           </Text>
-                    </Group>
-                        
-                        <Card padding="md" radius="sm" style={{ backgroundColor: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-0)' }}>
-                          <Stack gap="xs">
-                            <Text size="md" fw={500} c={isDark ? 'gray.3' : 'dark'}>
-                              Your answer: <span style={{ color: isDark ? (isCorrect ? 'green.3' : 'red.3') : (isCorrect ? 'var(--mantine-color-green-7)' : 'var(--mantine-color-red-7)'), fontWeight: 700 }}>
+                    </Space>
+
+                        <Card bodyStyle={{ padding: '16px' }} style={{ backgroundColor: isDark ? '#262626' : '#fafafa' }}>
+                          <Space direction="vertical" size="small">
+                            <Text style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#d1d5db' : 'black' }}>
+                              Your answer: <span style={{ color: isDark ? (isCorrect ? '#d9f7be' : '#ffccc7') : (isCorrect ? '#52c41a' : '#ff4d4f'), fontWeight: 700 }}>
                                 {selectedAnswers[index]}
                               </span>
                     </Text>
-                            
+
                             {!isCorrect && (
-                              <Text size="md" fw={500} c={isDark ? 'gray.3' : 'dark'}>
-                                Correct answer: <span style={{ color: isDark ? 'green.3' : 'var(--mantine-color-green-7)', fontWeight: 700 }}>
+                              <Text style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#d1d5db' : 'black' }}>
+                                Correct answer: <span style={{ color: isDark ? '#d9f7be' : '#52c41a', fontWeight: 700 }}>
                                   {question.correctAnswer}
                                 </span>
                       </Text>
                     )}
-                            
+
                     {question.explanation && (
-                              <Alert color={isCorrect ? "green" : "blue"} title="💡 Explanation" mt="sm">
-                                <Text size="sm" c={isDark ? 'gray.3' : 'dimmed'}>{question.explanation}</Text>
-                              </Alert>
+                              <Alert message="💡 Explanation" description={question.explanation} type={isCorrect ? "success" : "info"} showIcon style={{ marginTop: '12px' }} />
                     )}
-                  </Stack>
+                  </Space>
                 </Card>
-                      </Stack>
+                      </Space>
                     </Card>
                   );
                 })}
-              </Stack>
-            </Stack>
+              </Space>
+            </Space>
           </Card>
-        </Stack>
+        </Space>
       )}
-    </Stack>
+    </Space>
   );
 }

@@ -1,7 +1,7 @@
 {
-  "name": "pathfinder",
+  "name": "course-ai",
   "version": "1.0.0",
-  "description": "A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.",
+  "description": "Course.AI - A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.",
   "private": true,
   "type": "module",
   "keywords": [
@@ -17,17 +17,17 @@
     "trpc"
   ],
   "author": {
-    "name": "Pathfinder Team",
-    "email": "team@pathfinder.com"
+    "name": "Course.AI Team",
+    "email": "team@course.ai"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/pathfinder.git"
+    "url": "https://github.com/yourusername/course-ai.git"
   },
-  "homepage": "https://pathfinder.com",
+  "homepage": "https://course.ai",
   "bugs": {
-    "url": "https://github.com/yourusername/pathfinder/issues"
+    "url": "https://github.com/yourusername/course-ai/issues"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -53,10 +53,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next out dist",
-    "prepare": "husky install"
+    "clean": "rm -rf .next out dist"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@ant-design/nextjs-registry": "^1.1.0",
     "@auth/prisma-adapter": "^2.7.2",
     "@google/generative-ai": "^0.24.1",
     "@mantine/core": "^8.2.1",
@@ -70,6 +71,7 @@
     "@trpc/client": "^11.0.0",
     "@trpc/react-query": "^11.0.0",
     "@trpc/server": "^11.0.0",
+    "antd": "^5.27.1",
     "next": "^15.2.3",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",

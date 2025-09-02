@@ -1,4 +1,4 @@
-# Pathfinder - AI Course Generator
+# Course.AI - AI Course Generator
 
 A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.
 
@@ -47,8 +47,8 @@ A modern, professional learning platform that generates personalized AI-powered 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/pathfinder.git
-   cd pathfinder
+   git clone https://github.com/yourusername/course-ai.git
+   cd course-ai
    ```
 
 2. **Install dependencies**
@@ -104,7 +104,7 @@ A modern, professional learning platform that generates personalized AI-powered 
 ## 📁 Project Structure
 
 ```
-pathfinder/
+course-ai/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── _components/        # Shared components

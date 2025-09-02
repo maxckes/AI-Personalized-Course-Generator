@@ -1,45 +1,48 @@
 "use client";
 
-import { 
-  Container, 
-  Title, 
-  Grid, 
-  Card, 
-  Text, 
-  Button, 
-  Group, 
-  Badge, 
-  Loader,
-  Stack,
+import {
+  Layout,
+  Typography,
+  Card,
+  Button,
+  Row,
+  Col,
+  Spin,
   Modal,
-  TextInput,
+  Input,
   Tabs,
-  useMantineColorScheme
-} from '@mantine/core';
-import { IconPlus, IconArchive, IconBook, IconRestore, IconExclamationMark, IconTrash } from '@tabler/icons-react';
+  Badge as AntBadge,
+  Space,
+  message,
+  notification
+} from 'antd';
+import {
+  PlusOutlined,
+  BookOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined
+} from '@ant-design/icons';
 import { useEffect, useState } from 'react';
-import { notifications } from '@mantine/notifications';
-import { IconCheck, IconX, IconInfoCircle, IconExclamationMark as IconWarning } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
+
+const { Title, Text } = Typography;
+const { Content } = Layout;
 
 import { api } from "~/trpc/react";
-import { Layout } from "~/components/Layout";
-import Link from 'next/link';
+import { Layout as AppLayout } from "~/components/Layout";
 
 export default function Dashboard() {
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-  
-  const [opened, { open, close }] = useDisclosure(false);
-  const [limitModalOpened, { open: openLimitModal, close: closeLimitModal }] = useDisclosure(false);
-  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
+
+  const [opened, setOpened] = useState(false);
+  const [limitModalOpened, setLimitModalOpened] = useState(false);
+  const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
-  const [activeTab, setActiveTab] = useState<string | null>('active');
+  const [activeTab, setActiveTab] = useState<string>('active');
   const [courseToDelete, setCourseToDelete] = useState<{ id: string; title: string } | null>(null);
   
   // Track loading states for individual items
@@ -64,42 +67,31 @@ export default function Dashboard() {
     onSuccess: async (data) => {
       // Invalidate the courses list to refresh the data
       await utils.course.getAll.invalidate();
-      
-      notifications.show({
-        title: 'Course Created Successfully! 🎉',
-        message: `"${data.title}" is ready for learning.`,
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 4000,
-        withCloseButton: true,
-      });
+
+      message.success(`Course "${data.title}" created successfully! 🎉`);
       setCourseTitle('');
-      close();
+      setOpened(false);
     },
     onError: (error) => {
       if (error.data?.code === 'CONFLICT') {
-        close(); // Close the create modal first
-        openLimitModal(); // Then open the limit modal
-        notifications.show({
-          title: 'Course Limit Reached',
-          message: 'You have reached the maximum of 2 active courses.',
-          color: 'orange',
-          icon: <IconWarning size={18} />,
-          autoClose: 7000,
+        setOpened(false); // Close the create modal first
+        setLimitModalOpened(true); // Then open the limit modal
+        notification.warning({
+          message: 'Course Limit Reached',
+          description: 'You have reached the maximum of 3 active courses.',
+          duration: 7,
         });
       } else {
-        notifications.show({
-          title: 'Failed to Create Course',
-          message: error.message || 'An unexpected error occurred while creating the course.',
-          color: 'red',
-          icon: <IconX size={18} />,
-          autoClose: 8000,
+        notification.error({
+          message: 'Failed to Create Course',
+          description: error.message || 'An unexpected error occurred while creating the course.',
+          duration: 8,
         });
       }
     },
   });
 
-  // Archive course mutation  
+  // Archive course mutation
   const archiveCourse = api.course.archive.useMutation({
     onMutate: (variables) => {
       // Add to archiving state
@@ -111,23 +103,14 @@ export default function Dashboard() {
     onSuccess: async (data) => {
       // Invalidate the courses list to refresh the data
       await utils.course.getAll.invalidate();
-      
-      notifications.show({
-        title: 'Course Archived 📦',
-        message: `"${data.title}" has been moved to your archived courses.`,
-        color: 'blue',
-        icon: <IconInfoCircle size={18} />,
-        autoClose: 3000,
-        withCloseButton: true,
-      });
+
+      message.success(`Course "${data.title}" archived successfully 📦`);
     },
     onError: (error) => {
-      notifications.show({
-        title: 'Failed to Archive Course',
-        message: error.message || 'Unable to archive the course. Please try again.',
-        color: 'red',
-        icon: <IconX size={18} />,
-        autoClose: 6000,
+      notification.error({
+        message: 'Failed to Archive Course',
+        description: error.message || 'Unable to archive the course. Please try again.',
+        duration: 6,
       });
     },
     onSettled: (data, error, variables) => {
@@ -151,35 +134,24 @@ export default function Dashboard() {
     onSuccess: async (data) => {
       // Invalidate the courses list to refresh the data
       await utils.course.getAll.invalidate();
-      
-      notifications.show({
-        title: 'Course Restored Successfully! 🎉',
-        message: `"${data.title}" is now active and ready for learning.`,
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 4000,
-        withCloseButton: true,
-      });
+
+      message.success(`Course "${data.title}" restored successfully! 🎉`);
       // Auto-switch to active tab to show the restored course
       setActiveTab('active');
     },
     onError: (error) => {
       if (error.data?.code === 'CONFLICT') {
-        openLimitModal(); // Show the limit modal for restore conflicts too
-        notifications.show({
-          title: 'Cannot Restore Course',
-          message: 'You already have 2 active courses. Archive one first to restore this course.',
-          color: 'orange',
-          icon: <IconWarning size={18} />,
-          autoClose: 8000,
+        setLimitModalOpened(true); // Show the limit modal for restore conflicts too
+        notification.warning({
+          message: 'Cannot Restore Course',
+          description: 'You already have 3 active courses. Archive one first to restore this course.',
+          duration: 8,
         });
       } else {
-        notifications.show({
-          title: 'Failed to Restore Course',
-          message: error.message || 'Unable to restore the course. Please try again.',
-          color: 'red',
-          icon: <IconX size={18} />,
-          autoClose: 6000,
+        notification.error({
+          message: 'Failed to Restore Course',
+          description: error.message || 'Unable to restore the course. Please try again.',
+          duration: 6,
         });
       }
     },
@@ -204,25 +176,16 @@ export default function Dashboard() {
     onSuccess: async (data) => {
       // Invalidate the courses list to refresh the data
       await utils.course.getAll.invalidate();
-      
-      notifications.show({
-        title: 'Course Deleted Successfully! 🗑️',
-        message: data.message,
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 4000,
-        withCloseButton: true,
-      });
-      closeDeleteModal();
+
+      message.success(data.message);
+      setDeleteModalOpened(false);
       setCourseToDelete(null);
     },
     onError: (error) => {
-      notifications.show({
-        title: 'Failed to Delete Course',
-        message: error.message || 'Unable to delete the course. Please try again.',
-        color: 'red',
-        icon: <IconX size={18} />,
-        autoClose: 6000,
+      notification.error({
+        message: 'Failed to Delete Course',
+        description: error.message || 'Unable to delete the course. Please try again.',
+        duration: 6,
       });
     },
     onSettled: (data, error, variables) => {
@@ -249,7 +212,7 @@ export default function Dashboard() {
 
   const handleDeleteCourse = (courseId: string, courseTitle: string) => {
     setCourseToDelete({ id: courseId, title: courseTitle });
-    openDeleteModal();
+    setDeleteModalOpened(true);
   };
 
   const confirmDeleteCourse = () => {
@@ -266,292 +229,294 @@ export default function Dashboard() {
   const activeCourseCount = courses?.filter(course => course.status === 'active').length ?? 0;
 
   return (
-    <Layout>
-      <Container size="xl" style={{
-        backgroundColor: mounted ? (isDark ? 'transparent' : 'transparent') : 'transparent',
-        minHeight: '100vh'
-      }}>
-        <Group justify="space-between" mb="xl">
-          <div>
-            <Title order={1} c={mounted ? (isDark ? 'white' : 'dark') : 'dark'}>My Courses</Title>
-            <Text c={mounted ? (isDark ? 'gray.4' : 'dimmed') : 'dimmed'}>
-              {activeCourseCount}/2 active courses
-            </Text>
+    <AppLayout>
+      <Content style={{ padding: '24px', maxWidth: '100%', margin: '0 auto' }}>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <Title level={1} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>My Courses</Title>
+              <Text style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
+                {activeCourseCount}/3 active courses
+              </Text>
+            </div>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setOpened(true)}
+              disabled={activeCourseCount >= 2}
+              size="large"
+            >
+              Create New Course
+            </Button>
           </div>
-          <Button 
-            leftSection={<IconPlus size={16} />}
-            onClick={open}
-            disabled={activeCourseCount >= 2}
-            color="blue"
-            variant="filled"
-          >
-            Create New Course
-          </Button>
-        </Group>
 
-        <Tabs value={activeTab} onChange={setActiveTab} mb="xl" styles={{
-          tab: {
-            color: mounted ? (isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)') : 'var(--mantine-color-gray-7)',
-            "&[data-active]": {
-              color: mounted ? (isDark ? 'var(--mantine-color-blue-4)' : 'var(--mantine-color-blue-6)') : 'var(--mantine-color-blue-6)',
-              borderBottomColor: mounted ? (isDark ? 'var(--mantine-color-blue-4)' : 'var(--mantine-color-blue-6)') : 'var(--mantine-color-blue-6)',
-            }
-          }
-        }}>
-          <Tabs.List>
-            <Tabs.Tab value="active">
-              Active Courses ({courses?.filter(c => c.status === 'active').length ?? 0})
-            </Tabs.Tab>
-            <Tabs.Tab value="archived">
-              Archived Courses ({courses?.filter(c => c.status === 'archived').length ?? 0})
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs>
+          <Tabs
+            activeKey={activeTab}
+            onChange={(key) => setActiveTab(key)}
+            size="large"
+            items={[
+              {
+                key: 'active',
+                label: `Active Courses (${courses?.filter(c => c.status === 'active').length ?? 0})`,
+              },
+              {
+                key: 'archived',
+                label: `Archived Courses (${courses?.filter(c => c.status === 'archived').length ?? 0})`,
+              },
+            ]}
+          />
 
-        {isLoading ? (
-          <Stack align="center" py="xl">
-            <Loader size="lg" color={mounted ? (isDark ? 'blue.4' : 'blue') : 'blue'} />
-            <Text c={mounted ? (isDark ? 'gray.3' : 'dark') : 'dark'}>Loading your courses...</Text>
-          </Stack>
-        ) : filteredCourses?.length === 0 ? (
-          <Card withBorder p="xl" radius="md" style={{
-            background: mounted ? (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-white)') : 'var(--mantine-color-white)',
-            borderColor: mounted ? (isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)') : 'var(--mantine-color-gray-3)'
-          }}>
-            <Stack align="center" gap="md">
-              <IconBook size={48} color={mounted ? (isDark ? 'var(--mantine-color-gray-6)' : 'var(--mantine-color-gray-5)') : 'var(--mantine-color-gray-5)'} />
-              <Text size="lg" fw={500} c={mounted ? (isDark ? 'white' : 'dark') : 'dark'}>
-                {activeTab === 'active' ? 'No active courses' : 'No archived courses'}
-              </Text>
-              <Text c={mounted ? (isDark ? 'gray.4' : 'dimmed') : 'dimmed'} ta="center">
-                {activeTab === 'active' 
-                  ? 'Get started by creating your first AI-generated course. You can create up to 2 active courses.'
-                  : 'Archived courses will appear here when you archive them.'
-                }
-              </Text>
-              {activeTab === 'active' && (
-                <Button 
-                  leftSection={<IconPlus size={16} />}
-                  onClick={open}
-                  color="blue"
-                  variant="filled"
-                >
-                  Create Your First Course
-                </Button>
-              )}
-            </Stack>
-          </Card>
-        ) : (
-          <Grid>
-            {filteredCourses?.map((course) => (
-              <Grid.Col key={course.id} span={{ base: 12, md: 6, lg: 4 }}>
-                <Card 
-                  withBorder 
-                  shadow="md" 
-                  p="xl" 
-                  radius="lg" 
-                  h="100%"
-                  style={{
-                    transition: 'all 0.3s ease',
-                    background: mounted ? (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-white)') : 'var(--mantine-color-white)',
-                    borderColor: mounted ? (isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)') : 'var(--mantine-color-gray-3)'
-                  }}
-                  className="course-card card-hover"
-                >
-                  <Stack justify="space-between" h="100%">
-                    <div>
-                      <Group justify="space-between" mb="md" align="flex-start">
-                        <Title 
-                          order={3} 
-                          fw={700} 
-                          size="1.25rem"
-                          c={mounted ? (isDark ? 'white' : 'dark') : 'dark'}
-                          style={{ lineHeight: 1.3 }}
-                        >
-                          {course.title}
-                        </Title>
-                        <Badge 
-                          size="lg"
-                          color={course.status === 'archived' ? 'gray' : 'blue'}
-                          variant="filled"
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '48px' }}>
+              <Spin size="large" />
+              <div style={{ marginTop: '16px' }}>
+                <Text style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>Loading your courses...</Text>
+              </div>
+            </div>
+          ) : filteredCourses?.length === 0 ? (
+            <Card
+              style={{
+                textAlign: 'center',
+                background: isDark ? '#1a1a1a' : '#ffffff',
+                borderColor: isDark ? '#404040' : '#d9d9d9'
+              }}
+            >
+              <Space direction="vertical" size="large" style={{ alignItems: 'center' }}>
+                <BookOutlined style={{ fontSize: '48px', color: isDark ? '#6b7280' : '#9ca3af' }} />
+                <Title level={4} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>
+                  {activeTab === 'active' ? 'No active courses' : 'No archived courses'}
+                </Title>
+                <Text style={{ color: isDark ? '#9ca3af' : '#6b7280', textAlign: 'center' }}>
+                  {activeTab === 'active'
+                    ? 'Get started by creating your first AI-generated course. You can create up to 3 active courses.'
+                    : 'Archived courses will appear here when you archive them.'
+                  }
+                </Text>
+                {activeTab === 'active' && (
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setOpened(true)}
+                    size="large"
+                  >
+                    Create Your First Course
+                  </Button>
+                )}
+              </Space>
+            </Card>
+          ) : (
+            <Row gutter={[24, 24]}>
+              {filteredCourses?.map((course) => (
+                <Col key={course.id} xs={24} sm={12} lg={8}>
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: isDark ? '#1a1a1a' : '#ffffff',
+                      borderColor: isDark ? '#404040' : '#d9d9d9',
+                      transition: 'all 0.3s ease'
+                    }}
+                    hoverable
+                  >
+                    <Space direction="vertical" size="middle" style={{ width: '100%', height: '100%' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                          <Title
+                            level={4}
+                            style={{
+                              color: isDark ? 'white' : 'black',
+                              lineHeight: 1.3,
+                              margin: 0,
+                              flex: 1,
+                              marginRight: '12px'
+                            }}
+                          >
+                            {course.title}
+                          </Title>
+                          <AntBadge
+                            count={course.status === 'archived' ? '📦 Archived' : '🎓 Active'}
+                            style={{
+                              backgroundColor: course.status === 'archived'
+                                ? (isDark ? '#4a5568' : '#d1d5db')
+                                : '#1c7ed6',
+                              color: 'white'
+                            }}
+                          />
+                        </div>
+
+                        <Text
                           style={{
-                            background: mounted ? (course.status === 'archived' 
-                              ? (isDark 
-                                  ? 'linear-gradient(135deg, var(--mantine-color-gray-7) 0%, var(--mantine-color-gray-5) 100%)'
-                                  : 'linear-gradient(135deg, var(--mantine-color-gray-6) 0%, var(--mantine-color-gray-4) 100%)')
-                              : 'linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-4) 100%)'
-                            ) : (course.status === 'archived' 
-                              ? 'linear-gradient(135deg, var(--mantine-color-gray-6) 0%, var(--mantine-color-gray-4) 100%)'
-                              : 'linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-4) 100%)')
+                            color: isDark ? '#9ca3af' : '#6b7280',
+                            lineHeight: 1.6,
+                            marginBottom: '24px'
                           }}
                         >
-                          {course.status === 'archived' ? '📦 Archived' : '🎓 Active'}
-                        </Badge>
-                      </Group>
-                      
-                      <Text 
-                        size="md" 
-                        c={mounted ? (isDark ? 'gray.4' : 'dimmed') : 'dimmed'} 
-                        mb="lg"
-                        style={{ lineHeight: 1.6 }}
-                      >
-                        {course.description ?? 'An engaging course designed to help you master new skills and advance your knowledge.'}
-                      </Text>
-                    </div>
+                          {course.description ?? 'An engaging course designed to help you master new skills and advance your knowledge.'}
+                        </Text>
+                      </div>
 
-                    <Stack gap="md">
-                      <Button 
-                        component={Link}
-                        href={`/course/${course.id}`}
-                        size="lg"
-                        fullWidth
-                        leftSection={<IconBook size={20} />}
-                        color="blue"
-                        variant="filled"
-                      >
-                        {course.status === 'archived' ? 'View Course' : 'Continue Learning'}
-                      </Button>
-                      
-                      <Group grow>
-                        {activeTab === 'active' ? (
-                          <Button
-                            variant="light"
-                            color="orange"
-                            size="md"
-                            leftSection={<IconArchive size={16} />}
-                            onClick={() => handleArchiveCourse(course.id)}
-                            loading={loadingStates.archiving.includes(course.id)}
-                            disabled={loadingStates.archiving.includes(course.id)}
-                            style={{ fontWeight: 500 }}
-                          >
-                            {loadingStates.archiving.includes(course.id) ? 'Archiving...' : 'Archive'}
-                          </Button>
-                        ) : (
-                          <>
+                      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                        <Button
+                          type="primary"
+                          size="large"
+                          block
+                          icon={<BookOutlined />}
+                          onClick={() => window.location.href = `/course/${course.id}`}
+                        >
+                          {course.status === 'archived' ? 'View Course' : 'Continue Learning'}
+                        </Button>
+
+                        <Space direction="horizontal" style={{ width: '100%' }}>
+                          {activeTab === 'active' ? (
                             <Button
-                              variant="light"
-                              color="green"
-                              size="md"
-                              leftSection={<IconRestore size={16} />}
-                              onClick={() => handleRestoreCourse(course.id)}
-                              loading={loadingStates.restoring.includes(course.id)}
-                              disabled={loadingStates.restoring.includes(course.id) || loadingStates.deleting.includes(course.id)}
-                              style={{ fontWeight: 500 }}
+                              block
+                              icon={<BookOutlined />}
+                              onClick={() => handleArchiveCourse(course.id)}
+                              loading={loadingStates.archiving.includes(course.id)}
+                              disabled={loadingStates.archiving.includes(course.id)}
+                              style={{ flex: 1 }}
                             >
-                              {loadingStates.restoring.includes(course.id) ? 'Restoring...' : 'Restore'}
+                              {loadingStates.archiving.includes(course.id) ? 'Archiving...' : 'Archive'}
                             </Button>
-                            <Button
-                              variant="light"
-                              color="red"
-                              size="md"
-                              leftSection={<IconTrash size={16} />}
-                              onClick={() => handleDeleteCourse(course.id, course.title)}
-                              loading={loadingStates.deleting.includes(course.id)}
-                              disabled={loadingStates.deleting.includes(course.id) || loadingStates.restoring.includes(course.id)}
-                              style={{ fontWeight: 500 }}
-                            >
-                              {loadingStates.deleting.includes(course.id) ? 'Deleting...' : 'Delete'}
-                            </Button>
-                          </>
-                        )}
-                      </Group>
-                    </Stack>
-                  </Stack>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
-        )}
+                          ) : (
+                            <>
+                              <Button
+                                type="default"
+                                block
+                                icon={<BookOutlined />}
+                                onClick={() => handleRestoreCourse(course.id)}
+                                loading={loadingStates.restoring.includes(course.id)}
+                                disabled={loadingStates.restoring.includes(course.id) || loadingStates.deleting.includes(course.id)}
+                                style={{ flex: 1 }}
+                              >
+                                {loadingStates.restoring.includes(course.id) ? 'Restoring...' : 'Restore'}
+                              </Button>
+                              <Button
+                                danger
+                                block
+                                icon={<DeleteOutlined />}
+                                onClick={() => handleDeleteCourse(course.id, course.title)}
+                                loading={loadingStates.deleting.includes(course.id)}
+                                disabled={loadingStates.deleting.includes(course.id) || loadingStates.restoring.includes(course.id)}
+                                style={{ flex: 1 }}
+                              >
+                                {loadingStates.deleting.includes(course.id) ? 'Deleting...' : 'Delete'}
+                              </Button>
+                            </>
+                          )}
+                        </Space>
+                      </Space>
+                    </Space>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
 
         {/* Create Course Modal */}
-        <Modal opened={opened} onClose={close} title="Create New Course">
-          <Stack>
-            <TextInput
-              label="Course Title"
-              placeholder="Enter course title"
-              value={courseTitle}
-              onChange={(e) => setCourseTitle(e.target.value)}
-              error={courseTitle.length > 0 && courseTitle.length < 3 ? 'Title must be at least 3 characters' : null}
-            />
-            <Group justify="flex-end">
-              <Button variant="subtle" onClick={close}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleCreateCourse}
-                loading={createCourse.isPending}
-                disabled={courseTitle.length < 3}
-              >
-                Create Course
-              </Button>
-            </Group>
-          </Stack>
+        <Modal
+          title="Create New Course"
+          open={opened}
+          onCancel={() => setOpened(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setOpened(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="primary"
+              onClick={handleCreateCourse}
+              loading={createCourse.isPending}
+              disabled={courseTitle.length < 3}
+            >
+              Create Course
+            </Button>,
+          ]}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                Course Title
+              </Text>
+              <Input
+                placeholder="Enter course title"
+                value={courseTitle}
+                onChange={(e) => setCourseTitle(e.target.value)}
+                status={courseTitle.length > 0 && courseTitle.length < 3 ? 'error' : ''}
+              />
+              {courseTitle.length > 0 && courseTitle.length < 3 && (
+                <Text type="danger" style={{ fontSize: '12px', marginTop: '4px' }}>
+                  Title must be at least 3 characters
+                </Text>
+              )}
+            </div>
+          </Space>
         </Modal>
 
         {/* Course Limit Modal */}
-        <Modal 
-          opened={limitModalOpened} 
-          onClose={closeLimitModal} 
+        <Modal
           title="Course Limit Reached"
+          open={limitModalOpened}
+          onCancel={() => setLimitModalOpened(false)}
           centered
+          footer={[
+            <Button key="cancel" onClick={() => setLimitModalOpened(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="view"
+              type="primary"
+              onClick={() => {
+                setLimitModalOpened(false);
+                setActiveTab('active'); // Switch to active tab to show courses
+              }}
+            >
+              View My Courses
+            </Button>,
+          ]}
         >
-          <Stack align="center" gap="md">
-            <IconExclamationMark size={48} color="var(--mantine-color-orange-6)" />
-            <Text size="lg" fw={500} ta="center">
-              Maximum Course Limit Reached
-            </Text>
-            <Text c="dimmed" ta="center">
-              You have reached the maximum of 2 active courses. To create a new course, 
+          <Space direction="vertical" size="large" style={{ textAlign: 'center' }}>
+            <ExclamationCircleOutlined style={{ fontSize: '48px', color: '#faad14' }} />
+            <Title level={4}>Maximum Course Limit Reached</Title>
+            <Text>
+              You have reached the maximum of 3 active courses. To create a new course,
               please archive one of your existing courses first.
             </Text>
-            <Group>
-              <Button variant="subtle" onClick={closeLimitModal}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  closeLimitModal();
-                  setActiveTab('active'); // Switch to active tab to show courses
-                }}
-              >
-                View My Courses
-              </Button>
-            </Group>
-          </Stack>
+          </Space>
         </Modal>
 
         {/* Delete Confirmation Modal */}
-        <Modal 
-          opened={deleteModalOpened} 
-          onClose={closeDeleteModal} 
+        <Modal
           title="Delete Course"
+          open={deleteModalOpened}
+          onCancel={() => setDeleteModalOpened(false)}
           centered
+          footer={[
+            <Button key="cancel" onClick={() => setDeleteModalOpened(false)}>
+              Cancel
+            </Button>,
+            <Button
+              key="delete"
+              danger
+              type="primary"
+              icon={<DeleteOutlined />}
+              onClick={confirmDeleteCourse}
+              loading={deleteCourse.isPending}
+            >
+              Delete Course
+            </Button>,
+          ]}
         >
-          <Stack align="center" gap="md">
-            <IconTrash size={48} color="var(--mantine-color-red-6)" />
-            <Text size="lg" fw={500} ta="center">
-              Are you sure you want to delete this course?
-            </Text>
-            <Text c="dimmed" ta="center">
-              <Text component="span" fw={500}>&ldquo;{courseToDelete?.title}&rdquo;</Text> will be permanently deleted. 
+          <Space direction="vertical" size="large" style={{ textAlign: 'center' }}>
+            <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f' }} />
+            <Title level={4}>Are you sure you want to delete this course?</Title>
+            <Text>
+              <Text strong>&ldquo;{courseToDelete?.title}&rdquo;</Text> will be permanently deleted.
               This action cannot be undone and all course content, modules, and progress will be lost.
             </Text>
-            <Group>
-              <Button variant="subtle" onClick={closeDeleteModal}>
-                Cancel
-              </Button>
-              <Button 
-                color="red"
-                leftSection={<IconTrash size={16} />}
-                onClick={confirmDeleteCourse}
-                loading={deleteCourse.isPending}
-              >
-                Delete Course
-              </Button>
-            </Group>
-          </Stack>
+          </Space>
         </Modal>
-      </Container>
-    </Layout>
+        </Space>
+      </Content>
+    </AppLayout>
   );
 }

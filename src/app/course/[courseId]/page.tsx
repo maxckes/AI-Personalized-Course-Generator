@@ -2,45 +2,42 @@
 
 import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { 
-  AppShell,
-  Container,
-  Title,
-  Text,
-  Loader,
-  Stack,
-  Group,
-  Badge,
-  Accordion,
+import {
+  Layout,
+  Typography,
+  Spin,
+  Space,
+  Badge as AntBadge,
+  Collapse,
   Button,
   Progress,
   Card,
   Alert,
-  Breadcrumbs,
-  Anchor,
-  ActionIcon,
+  Breadcrumb,
   Avatar,
-  Menu,
+  Dropdown,
   Tooltip,
-  ScrollArea,
-  useMantineColorScheme
-} from '@mantine/core';
-import { 
-  IconBook, 
-  IconCheck, 
-  IconPlayerPlay, 
-  IconFileText, 
-  IconQuestionMark,
-  IconArrowLeft,
-  IconClock,
-  IconTrophy,
-  IconUser,
-  IconLogout,
-  IconFlask
-} from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications';
+  message
+} from 'antd';
+import {
+  BookOutlined,
+  CheckCircleOutlined,
+  PlayCircleOutlined,
+  FileTextOutlined,
+  QuestionCircleOutlined,
+  ArrowLeftOutlined,
+  ClockCircleOutlined,
+  TrophyOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  ExperimentOutlined
+} from '@ant-design/icons';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+
+const { Title, Text } = Typography;
+const { Header, Sider, Content } = Layout;
+const { Panel } = Collapse;
 
 import { api } from "~/trpc/react";
 import { ContentRenderer } from "~/components/ContentRenderer";
@@ -81,8 +78,7 @@ export default function CoursePage() {
   const courseId = params?.courseId as string;
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const { data: session } = useSession();
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark] = useState(false); // For now, keeping it simple
 
   // Add state
   const [pendingModules, setPendingModules] = useState<string[]>([]);
@@ -107,22 +103,11 @@ export default function CoursePage() {
     onSuccess: async () => {
       // Invalidate the course query to refresh the data
       await utils.course.getById.invalidate({ courseId });
-      
-      notifications.show({
-        title: 'Progress Updated',
-        message: 'Your progress has been saved.',
-        color: 'green',
-        icon: <IconCheck size={18} />,
-        autoClose: 2000,
-      });
+
+      message.success('Progress Updated - Your progress has been saved.');
     },
     onError: (error) => {
-      notifications.show({
-        title: 'Failed to Update Progress',
-        message: error.message,
-        color: 'red',
-        autoClose: 5000,
-      });
+      message.error(`Failed to Update Progress: ${error.message}`);
     },
     onSettled: (data, error, variables) => {
       setPendingModules(prev => prev.filter(id => id !== variables.moduleId));
@@ -158,48 +143,47 @@ export default function CoursePage() {
 
   if (isLoading) {
     return (
-      <AppShell>
-        <AppShell.Main>
-          <Container size="xl" py="xl">
-            <Stack align="center" gap="md">
-              <Loader size="lg" />
-              <Text>Loading course...</Text>
-            </Stack>
-          </Container>
-        </AppShell.Main>
-      </AppShell>
+      <Layout>
+        <Content style={{ padding: '48px', textAlign: 'center' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: '16px' }}>
+            <Text>Loading course...</Text>
+          </div>
+        </Content>
+      </Layout>
     );
   }
 
   if (error || !typedCourse) {
     return (
-      <AppShell>
-        <AppShell.Main>
-          <Container size="sm" py="xl">
-            <Alert color="red" title="Course Not Found">
-              {(error as { message?: string })?.message ?? "The course you're looking for doesn't exist or you don't have access to it."}
-            </Alert>
-            <Group justify="center" mt="xl">
-              <Button component={Link} href="/dashboard" leftSection={<IconArrowLeft size={16} />}>
-                Back to Dashboard
-              </Button>
-            </Group>
-          </Container>
-        </AppShell.Main>
-      </AppShell>
+      <Layout>
+        <Content style={{ padding: '48px', maxWidth: '600px', margin: '0 auto' }}>
+          <Alert
+            message="Course Not Found"
+            description={(error as { message?: string })?.message ?? "The course you're looking for doesn't exist or you don't have access to it."}
+            type="error"
+            showIcon
+          />
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <Button type="primary" icon={<ArrowLeftOutlined />}>
+              <Link href="/dashboard" style={{ color: 'inherit' }}>Back to Dashboard</Link>
+            </Button>
+          </div>
+        </Content>
+      </Layout>
     );
   }
 
   const getModuleIcon = (contentType: string) => {
     switch (contentType) {
       case 'READING':
-        return <IconFileText size={16} />;
+        return <FileTextOutlined />;
       case 'VIDEO':
-        return <IconPlayerPlay size={16} />;
+        return <PlayCircleOutlined />;
       case 'QUIZ':
-        return <IconQuestionMark size={16} />;
+        return <QuestionCircleOutlined />;
       default:
-        return <IconBook size={16} />;
+        return <BookOutlined />;
     }
   };
 
@@ -217,239 +201,277 @@ export default function CoursePage() {
   };
 
   return (
-    <AppShell
-      header={{ height: 70 }}
-      navbar={{ width: 350, breakpoint: 'md', collapsed: { mobile: true } }}
-      padding={0}
-    >
+    <Layout style={{ minHeight: '100vh' }}>
       {/* Header */}
-      <AppShell.Header style={{
-        backgroundColor: isDark ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-white)',
-        borderBottom: isDark ? '1px solid var(--mantine-color-dark-4)' : '1px solid var(--mantine-color-gray-3)'
+      <Header style={{
+        background: isDark ? '#1a1a1a' : '#ffffff',
+        borderBottom: isDark ? '1px solid #404040' : '1px solid #d9d9d9',
+        padding: '0 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <IconBook size={28} color={isDark ? '#5c7cfa' : '#1c7ed6'} />
-            <Title order={2} c={isDark ? 'blue.4' : 'blue'}>Pathfinder</Title>
-          </Group>
-          
-          {session && (
-            <Group gap="sm">
-              <Tooltip label="API Test Lab">
-                <ActionIcon
-                  component={Link}
-                  href="/test-api"
-                  variant="subtle"
-                  color="gray"
-                  size="md"
-                >
-                  <IconFlask size={18} />
-                </ActionIcon>
-              </Tooltip>
-              
-              <Menu trigger="hover" openDelay={100} closeDelay={400}>
-                <Menu.Target>
-                  <Group style={{ cursor: 'pointer' }}>
-                    <Avatar 
-                      src={session.user?.image} 
-                      alt={session.user?.name ?? 'User'} 
-                      size="sm" 
-                    />
-                    <Text size="sm" c={isDark ? 'white' : 'dark'}>{session.user?.name}</Text>
-                  </Group>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item leftSection={<IconUser size={16} />}>
-                    Profile
-                  </Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item 
-                    leftSection={<IconLogout size={16} />}
-                    onClick={() => {
-                      notifications.show({
-                        title: 'Signed Out',
-                        message: 'You have been successfully signed out.',
-                        color: 'blue',
-                        autoClose: 3000,
-                      });
+        <Space>
+          <BookOutlined style={{ fontSize: '28px', color: isDark ? '#5c7cfa' : '#1c7ed6' }} />
+          <Title level={3} style={{ color: isDark ? '#5c7cfa' : '#1c7ed6', margin: 0 }}>Course.AI</Title>
+        </Space>
+
+        {session && (
+          <Space>
+            <Tooltip title="API Test Lab">
+              <Button
+                type="text"
+                icon={<ExperimentOutlined />}
+                onClick={() => window.location.href = '/test-api'}
+              />
+            </Tooltip>
+
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'profile',
+                    icon: <UserOutlined />,
+                    label: 'Profile',
+                  },
+                  {
+                    type: 'divider',
+                  },
+                  {
+                    key: 'logout',
+                    icon: <LogoutOutlined />,
+                    label: 'Sign out',
+                    onClick: () => {
+                      message.success('Signed out successfully');
                       void signOut();
-                    }}
-                  >
-                    Sign out
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            </Group>
-          )}
-        </Group>
-      </AppShell.Header>
+                    },
+                  },
+                ],
+              }}
+              trigger={['click']}
+            >
+              <Space style={{ cursor: 'pointer' }}>
+                <Avatar
+                  src={session.user?.image}
+                  alt={session.user?.name ?? 'User'}
+                  size="small"
+                />
+                <Text style={{ color: isDark ? 'white' : 'black' }}>{session.user?.name}</Text>
+              </Space>
+            </Dropdown>
+          </Space>
+        )}
+      </Header>
 
       {/* Left Sidebar - Course Navigation */}
-      <AppShell.Navbar p="md" withBorder style={{
-        backgroundColor: isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-0)',
-        borderRight: isDark ? '1px solid var(--mantine-color-dark-4)' : '1px solid var(--mantine-color-gray-3)'
-      }}>
-        <ScrollArea style={{ height: 'calc(100vh - 140px)' }}>
-          <Stack gap="md">
+      <Sider
+        width={350}
+        style={{
+          background: isDark ? '#1a1a1a' : '#fafafa',
+          borderRight: isDark ? '1px solid #404040' : '1px solid #d9d9d9'
+        }}
+        breakpoint="md"
+        collapsedWidth={0}
+      >
+        <div style={{ padding: '16px', height: 'calc(100vh - 70px)', overflow: 'auto' }}>
+          <Space direction="vertical" size="middle">
             {/* Course Header */}
-            <Stack gap="xs">
-              <Breadcrumbs>
-                <Anchor component={Link} href="/dashboard" size="sm" c={isDark ? 'blue.4' : 'blue'}>
-                  Courses
-                </Anchor>
-                <Text size="sm" c={isDark ? 'gray.4' : 'dimmed'}>{typedCourse.title}</Text>
-              </Breadcrumbs>
-              
-              <Title order={3} lineClamp={2} c={isDark ? 'white' : 'dark'}>
+            <Space direction="vertical" size="small">
+              <Breadcrumb
+                items={[
+                  {
+                    title: <Link href="/dashboard" style={{ color: isDark ? '#5c7cfa' : '#1c7ed6' }}>Courses</Link>
+                  },
+                  {
+                    title: <Text style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>{typedCourse.title}</Text>
+                  }
+                ]}
+              />
+
+              <Title level={4} style={{
+                color: isDark ? 'white' : 'black',
+                lineHeight: 1.2,
+                margin: 0
+              }}>
                 {typedCourse.title}
               </Title>
-              
+
               {typedCourse.description && (
-                <Text size="sm" c={isDark ? 'gray.4' : 'dimmed'} lineClamp={3}>
+                <Text style={{
+                  fontSize: '14px',
+                  color: isDark ? '#9ca3af' : '#6b7280',
+                  lineHeight: 1.4
+                }}>
                   {typedCourse.description}
                 </Text>
               )}
-            </Stack>
+            </Space>
 
             {/* Progress Overview */}
-            <Card withBorder padding="sm" radius="md" style={{
-              backgroundColor: isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-white)',
-              borderColor: isDark ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'
-            }}>
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm" fw={500} c={isDark ? 'white' : 'dark'}>Course Progress</Text>
-                  <Badge 
-                    color={progressPercentage === 100 ? 'green' : 'blue'} 
-                    variant="light"
-                    leftSection={progressPercentage === 100 ? <IconTrophy size={12} /> : <IconClock size={12} />}
-                  >
-                    {Math.round(progressPercentage)}%
-                  </Badge>
-                </Group>
-                <Progress value={progressPercentage} size="sm" />
-                <Text size="xs" c={isDark ? 'gray.5' : 'dimmed'}>
+            <Card
+              size="small"
+              style={{
+                background: isDark ? '#2a2a2a' : '#ffffff',
+                borderColor: isDark ? '#404040' : '#d9d9d9'
+              }}
+            >
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontWeight: 500, color: isDark ? 'white' : 'black' }}>Course Progress</Text>
+                  <AntBadge
+                    count={
+                      <Space>
+                        {progressPercentage === 100 ? <TrophyOutlined /> : <ClockCircleOutlined />}
+                        {Math.round(progressPercentage)}%
+                      </Space>
+                    }
+                    style={{
+                      backgroundColor: progressPercentage === 100 ? '#52c41a' : '#1c7ed6'
+                    }}
+                  />
+                </div>
+                <Progress percent={progressPercentage} size="small" />
+                <Text style={{ fontSize: '12px', color: isDark ? '#9ca3af' : '#6b7280' }}>
                   {completedModules} of {totalModules} modules completed
                 </Text>
-              </Stack>
+              </Space>
             </Card>
 
             {/* Week/Module Navigation */}
-            <Accordion 
-              variant="separated" 
-              defaultValue={typedCourse.weeks[0]?.id}
-              styles={{
-                item: { border: '1px solid var(--mantine-color-gray-3)' },
-                control: { padding: '12px' },
-              }}
+            <Collapse
+              defaultActiveKey={typedCourse.weeks[0]?.id ? [typedCourse.weeks[0].id] : []}
+              bordered={false}
+              style={{ background: 'transparent' }}
             >
               {typedCourse.weeks.map((week: WeekData) => (
-                <Accordion.Item key={week.id} value={week.id}>
-                  <Accordion.Control>
-                    <Group justify="space-between" wrap="nowrap">
-                      <Stack gap={2}>
-                        <Text fw={500} size="sm" c={isDark ? 'white' : 'dark'}>
-                          Week {week.weekNumber}: {week.title}
-                        </Text>
-                        <Text size="xs" c={isDark ? 'gray.5' : 'dimmed'}>
-                          {week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length} / {week.modules.length} completed
-                        </Text>
-                      </Stack>
-                    </Group>
-                  </Accordion.Control>
-                  
-                  <Accordion.Panel>
-                    <Stack gap="xs">
-                      {week.modules.map((module: ModuleData) => {
-                        const isCompleted = module.progress[0]?.isCompleted ?? false;
-                        const isSelected = selectedModuleId === module.id;
-                        
-                        return (
-                          <Card
-                            key={module.id}
-                            padding="sm"
-                            radius="sm"
-                            withBorder={isSelected}
-                            style={{
-                              cursor: 'pointer',
-                              backgroundColor: isSelected 
-                                ? (isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-blue-1)')
-                                : undefined,
-                              borderColor: isSelected 
-                                ? (isDark ? 'var(--mantine-color-blue-8)' : 'var(--mantine-color-blue-5)')
-                                : undefined,
-                            }}
-                            onClick={() => setSelectedModuleId(module.id)}
-                          >
-                            <Group justify="space-between" wrap="nowrap">
-                              <Group gap="xs" style={{ flex: 1, minWidth: 0 }}>
-                                {getModuleIcon(module.contentType)}
-                                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                                  <Text size="sm" fw={isSelected ? 500 : 400} lineClamp={2} c={isDark ? (isSelected ? 'blue.3' : 'gray.3') : (isSelected ? 'blue.7' : 'dark')}>
-                                    {module.title}
-                                  </Text>
-                                  <Badge 
-                                    size="xs" 
-                                    color={getContentTypeColor(module.contentType)}
-                                    variant="light"
-                                  >
-                                    {module.contentType.toLowerCase()}
-                                  </Badge>
-                                </Stack>
-                              </Group>
-                              
-                              <Button
-                                size="xs"
-                                variant={isCompleted ? "filled" : "outline"}
-                                color={isCompleted ? "green" : (isDark ? "gray.4" : "gray.7")}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleProgressToggle(module.id, isCompleted);
-                                }}
-                                loading={pendingModules.includes(module.id)}
-                              >
-                                {isCompleted ? <IconCheck size={14} /> : "Mark Complete"}
-                              </Button>
-                            </Group>
-                          </Card>
-                        );
-                      })}
-                    </Stack>
-                  </Accordion.Panel>
-                </Accordion.Item>
+                <Panel
+                  key={week.id}
+                  header={
+                    <Space direction="vertical" size={0}>
+                      <Text style={{ color: isDark ? 'white' : 'black', fontWeight: 500 }}>
+                        Week {week.weekNumber}: {week.title}
+                      </Text>
+                      <Text style={{ fontSize: '12px', color: isDark ? '#9ca3af' : '#6b7280' }}>
+                        {week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length} / {week.modules.length} completed
+                      </Text>
+                    </Space>
+                  }
+                  style={{
+                    border: isDark ? '1px solid #404040' : '1px solid #d9d9d9',
+                    marginBottom: '8px',
+                    background: isDark ? '#2a2a2a' : '#ffffff'
+                  }}
+                >
+                  <Space direction="vertical" size="small">
+                    {week.modules.map((module: ModuleData) => {
+                      const isCompleted = module.progress[0]?.isCompleted ?? false;
+                      const isSelected = selectedModuleId === module.id;
+
+                      return (
+                        <Card
+                          key={module.id}
+                          size="small"
+                          style={{
+                            cursor: 'pointer',
+                            background: isSelected
+                              ? (isDark ? '#1a1a1a' : '#e6f7ff')
+                              : (isDark ? '#2a2a2a' : '#ffffff'),
+                            borderColor: isSelected
+                              ? (isDark ? '#5c7cfa' : '#1c7ed6')
+                              : (isDark ? '#404040' : '#d9d9d9'),
+                          }}
+                          onClick={() => setSelectedModuleId(module.id)}
+                          hoverable
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Space style={{ flex: 1, minWidth: 0 }}>
+                              {getModuleIcon(module.contentType)}
+                              <Space direction="vertical" size={0} style={{ flex: 1, minWidth: 0 }}>
+                                <Text
+                                  style={{
+                                    fontWeight: isSelected ? 500 : 400,
+                                    color: isDark
+                                      ? (isSelected ? '#5c7cfa' : '#d1d5db')
+                                      : (isSelected ? '#1c7ed6' : 'black'),
+                                    lineHeight: 1.2
+                                  }}
+                                  ellipsis
+                                >
+                                  {module.title}
+                                </Text>
+                                <AntBadge
+                                  count={module.contentType.toLowerCase()}
+                                  style={{
+                                    backgroundColor: getContentTypeColor(module.contentType) === 'blue' ? '#1c7ed6' :
+                                                   getContentTypeColor(module.contentType) === 'red' ? '#ff4d4f' :
+                                                   getContentTypeColor(module.contentType) === 'green' ? '#52c41a' : '#6b7280'
+                                  }}
+                                />
+                              </Space>
+                            </Space>
+
+                            <Button
+                              size="small"
+                              type={isCompleted ? "primary" : "default"}
+                              danger={!isCompleted}
+                              icon={isCompleted ? <CheckCircleOutlined /> : undefined}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleProgressToggle(module.id, isCompleted);
+                              }}
+                              loading={pendingModules.includes(module.id)}
+                              style={{ flexShrink: 0 }}
+                            >
+                              {isCompleted ? "Done" : "Mark Complete"}
+                            </Button>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </Space>
+                </Panel>
               ))}
-            </Accordion>
-          </Stack>
-        </ScrollArea>
-      </AppShell.Navbar>
+            </Collapse>
+          </Space>
+        </div>
+      </Sider>
 
       {/* Main Content Area */}
-      <AppShell.Main style={{
-        backgroundColor: isDark ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
-        minHeight: '100vh'
-      }}>
-        <ScrollArea style={{ height: 'calc(100vh - 70px)' }}>
-          <Container size="xl" py="md">
+      <Layout>
+        <Content style={{
+          background: isDark ? '#141414' : '#fafafa',
+          minHeight: 'calc(100vh - 70px)',
+          padding: '24px',
+          overflow: 'auto'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {selectedModule ? (
-              <ContentRenderer 
+              <ContentRenderer
                 module={selectedModule}
                 onComplete={(isCompleted) => handleProgressToggle(selectedModule.id, !isCompleted)}
                 isCompleted={selectedModule.progress[0]?.isCompleted ?? false}
               />
             ) : (
-              <Stack align="center" justify="center" h="50vh">
-                <IconBook size={64} color={isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-5)'} />
-                <Title order={3} c={isDark ? 'gray.3' : 'dimmed'}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '50vh',
+                textAlign: 'center'
+              }}>
+                <BookOutlined style={{ fontSize: '64px', color: isDark ? '#6b7280' : '#9ca3af' }} />
+                <Title level={3} style={{ color: isDark ? '#d1d5db' : '#6b7280', margin: '16px 0' }}>
                   Select a Module to Begin
                 </Title>
-                <Text c={isDark ? 'gray.4' : 'dimmed'} ta="center" maw={400}>
+                <Text style={{ color: isDark ? '#9ca3af' : '#6b7280', maxWidth: '400px' }}>
                   Choose a module from the sidebar to start learning. Your progress will be automatically saved as you complete each section.
                 </Text>
-              </Stack>
+              </div>
             )}
-          </Container>
-        </ScrollArea>
-      </AppShell.Main>
-    </AppShell>
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }

@@ -1,9 +1,21 @@
 
 import { useEffect, useState } from 'react';
-import { AppShell, Group, Title, Button, Avatar, Menu, Text, ActionIcon, Tooltip, ScrollArea, useMantineColorScheme } from '@mantine/core';
-import { IconUser, IconLogout, IconBook, IconFlask, IconSun, IconMoon } from '@tabler/icons-react';
+import { Layout as AntLayout, Button, Avatar, Dropdown, Typography, Tooltip, Space, message, Input } from 'antd';
+import {
+  UserOutlined,
+  LogoutOutlined,
+  BookOutlined,
+  ExperimentOutlined,
+  SunOutlined,
+  MoonOutlined,
+  SearchOutlined,
+  BellOutlined,
+  SettingOutlined,
+  HomeOutlined,
+  BarChartOutlined,
+  UserSwitchOutlined
+} from '@ant-design/icons';
 import { useSession, signOut } from 'next-auth/react';
-import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -11,148 +23,205 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+const { Header, Content } = AntLayout;
+const { Title, Text } = Typography;
+
 export function Layout({ children }: LayoutProps) {
   const { data: session } = useSession();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // Only show API testing for this specific user ID
+  const isDeveloper = session?.user?.id === "cmdpwnf560000rvneb18d34ks";
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    message.info(isDark ? 'Switched to light mode' : 'Switched to dark mode');
+  };
+
+  const handleSignOut = () => {
+    message.success('You have been successfully signed out.');
+    void signOut();
+  };
+
   return (
-    <AppShell
-      header={{ height: 70 }}
-      navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: true } }}
-      padding="md"
-    >
-      <AppShell.Header style={{
-        backgroundColor: 'var(--header-bg)',
-        borderBottom: '1px solid var(--header-border)'
-      }}>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <IconBook size={28} style={{ color: 'var(--logo-color)' }} />
-            <Title order={2} c="var(--title-color)">Pathfinder</Title>
-          </Group>
-          
-          <Group gap="sm">
-            {/* Global Theme Toggle */}
-            <Tooltip label={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Switch to dark mode"}>
-              <ActionIcon
-                variant="subtle"
-                color={mounted ? (isDark ? 'yellow' : 'blue') : 'blue'}
-                onClick={() => toggleColorScheme()}
-                size="lg"
-              >
-                {mounted ? (isDark ? <IconSun size={20} /> : <IconMoon size={20} />) : <IconMoon size={20} />}
-              </ActionIcon>
+    <AntLayout style={{ minHeight: '100vh' }}>
+        <Header style={{
+          backgroundColor: isDark ? '#1f1f1f' : '#fff',
+          borderBottom: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 999,
+          boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+          height: '70px'
+        }}>
+          {/* Left Section - Logo and Navigation */}
+          <Space size="large" align="center">
+            {/* Logo and Title Separated */}
+            <Space align="center" size="small">
+              <BookOutlined style={{ fontSize: '28px', color: '#1890ff' }} />
+              <Title level={3} style={{ margin: 0, color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
+                Course.AI
+              </Title>
+            </Space>
+
+            {/* Navigation Menu */}
+            {session && (
+              <Space size="small">
+                <Button
+                  type="text"
+                  icon={<HomeOutlined />}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
+                >
+                  <Link href="/dashboard" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    Dashboard
+                  </Link>
+                </Button>
+
+                <Button
+                  type="text"
+                  icon={<BarChartOutlined />}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
+                >
+                  Analytics
+                </Button>
+
+                {isDeveloper && (
+                  <Button
+                    type="text"
+                    icon={<ExperimentOutlined />}
+                    size="large"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    <Link href="/test-api" style={{ color: 'inherit', textDecoration: 'none' }}>
+                      API Lab
+                    </Link>
+                  </Button>
+                )}
+              </Space>
+            )}
+          </Space>
+
+          {/* Right Section - Search, Notifications, User */}
+          <Space size="middle" align="center">
+            {/* Search Bar */}
+            <div style={{ width: '250px' }}>
+              <Input
+                placeholder="Search courses..."
+                prefix={<SearchOutlined style={{ color: isDark ? '#8c8c8c' : '#bfbfbf' }} />}
+                style={{
+                  borderRadius: '20px',
+                  backgroundColor: isDark ? '#262626' : '#f5f5f5',
+                  border: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
+                  height: '36px'
+                }}
+              />
+            </div>
+
+            {/* Theme Toggle */}
+            <Tooltip title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Switch to dark mode"}>
+              <Button
+                type="text"
+                icon={mounted ? (isDark ? <SunOutlined /> : <MoonOutlined />) : <MoonOutlined />}
+                onClick={toggleTheme}
+                size="large"
+                style={{ borderRadius: '8px' }}
+              />
+            </Tooltip>
+
+            {/* Notifications */}
+            <Tooltip title="Notifications">
+              <Button
+                type="text"
+                icon={<BellOutlined />}
+                size="large"
+                style={{ borderRadius: '8px' }}
+              />
+            </Tooltip>
+
+            {/* Settings */}
+            <Tooltip title="Settings">
+              <Button
+                type="text"
+                icon={<SettingOutlined />}
+                size="large"
+                style={{ borderRadius: '8px' }}
+              />
             </Tooltip>
 
             {session && (
-              <>
-                <Tooltip label="API Test Lab">
-                  <ActionIcon
-                    component={Link}
-                    href="/test-api"
-                    variant="subtle"
-                    color="gray"
-                    size="md"
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'profile',
+                      icon: <UserOutlined />,
+                      label: 'Profile',
+                    },
+                    {
+                      key: 'account',
+                      icon: <UserSwitchOutlined />,
+                      label: 'Account Settings',
+                    },
+                    {
+                      type: 'divider',
+                    },
+                    {
+                      key: 'signout',
+                      icon: <LogoutOutlined />,
+                      label: 'Sign out',
+                      onClick: handleSignOut,
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+                arrow
+              >
+                <Space style={{ cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }}>
+                  <Avatar
+                    src={session.user?.image}
+                    alt={session.user?.name ?? 'User'}
+                    size="small"
+                    style={{ border: `2px solid ${isDark ? '#1890ff' : '#40a9ff'}` }}
                   >
-                    <IconFlask size={18} />
-                  </ActionIcon>
-                </Tooltip>
-                
-                <Menu trigger="hover" openDelay={100} closeDelay={400}>
-                  <Menu.Target>
-                    <Group style={{ cursor: 'pointer' }}>
-                      <Avatar 
-                        src={session.user?.image} 
-                        alt={session.user?.name ?? 'User'} 
-                        size="sm" 
-                      />
-                      <Text size="sm" c="var(--user-text-color)">{session.user?.name}</Text>
-                    </Group>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<IconUser size={16} />}>
-                      Profile
-                    </Menu.Item>
-                    <Menu.Divider />
-                    <Menu.Item 
-                      leftSection={<IconLogout size={16} />}
-                      onClick={() => {
-                        notifications.show({
-                          title: 'Signed Out',
-                          message: 'You have been successfully signed out.',
-                          color: 'blue',
-                          autoClose: 3000,
-                        });
-                        void signOut();
-                      }}
-                    >
-                      Sign out
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </>
+                    {session.user?.name?.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Text
+                    strong
+                    style={{
+                      color: isDark ? '#fff' : '#000',
+                      maxWidth: '120px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {session.user?.name}
+                  </Text>
+                </Space>
+              </Dropdown>
             )}
-          </Group>
-        </Group>
-      </AppShell.Header>
+          </Space>
+        </Header>
 
-      <AppShell.Navbar p="md" style={{
-        backgroundColor: 'var(--navbar-bg)',
-        borderRight: '1px solid var(--navbar-border)'
-      }}>
-        <ScrollArea style={{ height: 'calc(100vh - 140px)' }}>
-          <Group justify="space-between" mb="md">
-            <Text fw={500} c="text">Quick Actions</Text>  {/* Assuming default text color is fine, or adjust if needed */}
-          </Group>
-          
-          <Button
-            component={Link}
-            href="/dashboard"
-            variant="light"
-            fullWidth
-            leftSection={<IconBook size={16} />}
-            mb="sm"
-            styles={{
-              root: {
-                backgroundColor: 'var(--dashboard-btn-bg)',
-                color: 'var(--dashboard-btn-color)',
-                '&:hover': {
-                  backgroundColor: 'var(--dashboard-btn-hover-bg)'
-                }
-              }
-            }}
-          >
-            Dashboard
-          </Button>
-          
-          <Button
-            component={Link}
-            href="/test-api"
-            variant="subtle"
-            fullWidth
-            leftSection={<IconFlask size={16} />}
-            size="sm"
-            c="var(--api-text-color)"
-          >
-            API Testing
-          </Button>
-        </ScrollArea>
-      </AppShell.Navbar>
-
-      <AppShell.Main style={{
-        backgroundColor: 'var(--main-bg)',
-        minHeight: '100vh'
-      }}>
-        <ScrollArea style={{ height: 'calc(100vh - 70px)' }}>
+        <Content style={{
+          backgroundColor: isDark ? '#000' : '#fafafa',
+          minHeight: 'calc(100vh - 64px)',
+          padding: '24px',
+          overflow: 'auto'
+        }}>
           {children}
-        </ScrollArea>
-      </AppShell.Main>
-    </AppShell>
+        </Content>
+    </AntLayout>
   );
 }
