@@ -29,9 +29,11 @@ const { Content } = Layout;
 
 import { api } from "~/trpc/react";
 import { Layout as AppLayout } from "~/components/Layout";
+import { useTheme } from "~/lib/theme-context";
 
 export default function Dashboard() {
-  const [isDark] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const [opened, setOpened] = useState(false);
   const [limitModalOpened, setLimitModalOpened] = useState(false);

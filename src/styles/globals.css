@@ -120,44 +120,34 @@
 
 /* Custom vars for Layout components */
 :root {
-  --header-bg: var(--mantine-color-white);
-  --header-border: var(--mantine-color-gray-3);
-  --navbar-bg: var(--mantine-color-gray-0);
-  --navbar-border: var(--mantine-color-gray-3);
-  --main-bg: var(--mantine-color-gray-0);
+  --header-bg: #ffffff;
+  --header-border: #d9d9d9;
+  --navbar-bg: #f8fafc;
+  --navbar-border: #d9d9d9;
+  --main-bg: #fafafa;
   --logo-color: #1c7ed6;
-  --title-color: var(--mantine-color-blue-filled);
-  --user-text-color: var(--mantine-color-dark-filled);
-  --dashboard-btn-bg: var(--mantine-color-blue-0);
-  --dashboard-btn-color: var(--mantine-color-blue-7);
-  --dashboard-btn-hover-bg: var(--mantine-color-blue-1);
-  --api-text-color: var(--mantine-color-gray-6);
+  --title-color: #1c7ed6;
+  --user-text-color: #000000d9;
+  --dashboard-btn-bg: #eff6ff;
+  --dashboard-btn-color: #1c7ed6;
+  --dashboard-btn-hover-bg: #dbeafe;
+  --api-text-color: #6b7280;
 }
 
 /* Dark Mode Variables */
-[data-mantine-color-scheme="dark"] {
-  --neutral-50: #0f172a;
-  --neutral-100: #1e293b;
-  --neutral-200: #334155;
-  --neutral-300: #475569;
-  --neutral-400: #64748b;
-  --neutral-500: #94a3b8;
-  --neutral-600: #cbd5e1;
-  --neutral-700: #e2e8f0;
-  --neutral-800: #f1f5f9;
-  --neutral-900: #f8fafc;
-  --header-bg: var(--mantine-color-dark-7);
-  --header-border: var(--mantine-color-dark-4);
-  --navbar-bg: var(--mantine-color-dark-6);
-  --navbar-border: var(--mantine-color-dark-4);
-  --main-bg: var(--mantine-color-dark-8);
-  --logo-color: #5c7cfa;
-  --title-color: var(--mantine-color-blue-4);
-  --user-text-color: var(--mantine-color-white);
-  --dashboard-btn-bg: var(--mantine-color-blue-9);
-  --dashboard-btn-color: var(--mantine-color-blue-2);
-  --dashboard-btn-hover-bg: var(--mantine-color-blue-8);
-  --api-text-color: var(--mantine-color-gray-4);
+[data-theme="dark"] {
+  --header-bg: #1f1f1f;
+  --header-border: #434343;
+  --navbar-bg: #141414;
+  --navbar-border: #434343;
+  --main-bg: #000000;
+  --logo-color: #4dabf7;
+  --title-color: #4dabf7;
+  --user-text-color: #ffffffd9;
+  --dashboard-btn-bg: #262626;
+  --dashboard-btn-color: #4dabf7;
+  --dashboard-btn-hover-bg: #1f1f1f;
+  --api-text-color: #94a3b8;
 }
 
 /* Professional Typography Enhancements */
@@ -180,6 +170,12 @@ p, .ant-typography p,
   line-height: 1.6 !important;
   hyphens: auto !important;
   word-spacing: 0.1em !important;
+}
+
+/* Theme-aware body background */
+body {
+  background-color: var(--main-bg) !important;
+  transition: background-color 0.3s ease;
 }
 
 /* Maintain center alignment for specific elements */
@@ -837,6 +833,63 @@ html {
 /* Enhanced Responsive Layout Improvements */
 .ant-layout-header {
   padding: 0 clamp(12px, 3vw, 24px) !important;
+}
+
+/* Logo and title alignment */
+.logo-title-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(6px, 1.5vw, 8px) !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+.logo-title-container .anticon,
+.logo-title-container .ant-typography {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* Mobile specific fixes for logo alignment */
+@media (max-width: 768px) {
+  .logo-title-container {
+    gap: 6px !important;
+  }
+
+  .logo-title-container .ant-typography h3 {
+    font-size: 20px !important;
+    line-height: 1.1 !important;
+  }
+
+  .logo-title-container .anticon {
+    font-size: 24px !important;
+  }
+
+  /* Mobile drawer specific styles */
+  .ant-drawer-header .logo-title-container {
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
+  .ant-drawer-header .logo-title-container .ant-typography {
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .logo-title-container {
+    gap: 4px !important;
+  }
+
+  .logo-title-container .ant-typography h3 {
+    font-size: 18px !important;
+  }
+
+  .logo-title-container .anticon {
+    font-size: 20px !important;
+  }
 }
 
 /* Global height constraints */

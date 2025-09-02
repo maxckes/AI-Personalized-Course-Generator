@@ -25,6 +25,7 @@ import {
   AudioMutedOutlined
 } from '@ant-design/icons';
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from '~/lib/theme-context';
 
 const { Title, Text } = Typography;
 
@@ -43,7 +44,8 @@ interface ContentRendererProps {
 
 export function ContentRenderer({ module, onComplete, isCompleted }: ContentRendererProps) {
   const [localCompleted, setLocalCompleted] = useState(isCompleted);
-  const [isDark] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     setLocalCompleted(isCompleted);
@@ -302,19 +304,19 @@ function CompactTextToSpeech({ text }: { text: string }) {
 
 // Theme Toggle Component
 function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    message.info(isDark ? 'Switched to light mode' : 'Switched to dark mode');
+  const handleToggle = () => {
+    toggleTheme();
+    message.info(theme === 'light' ? 'Switched to dark mode 🌙' : 'Switched to light mode ☀️');
   };
 
   return (
-    <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+    <Tooltip title={theme === 'dark' ? "Switch to light mode ☀️" : "Switch to dark mode 🌙"}>
       <Button
         type="text"
-        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
-        onClick={toggleTheme}
+        icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+        onClick={handleToggle}
         size="small"
       />
     </Tooltip>
@@ -323,7 +325,8 @@ function ThemeToggle() {
 
 // Reading Content Component with Reduced Spacing
 function ReadingContent({ content }: { content: unknown }) {
-  const [isDark] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const contentRef = useRef<HTMLDivElement>(null);
 
   if (!content || typeof content !== 'object' || content === null) {
@@ -474,7 +477,8 @@ function ReadingContent({ content }: { content: unknown }) {
 
 // Video Content Component
 function VideoContent({ content }: { content: unknown }) {
-  const [isDark] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   if (!content || typeof content !== 'object' || content === null) {
     return (
@@ -589,7 +593,8 @@ function QuizContent({ content }: { content: unknown }) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
-  const [isDark] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   if (!content || typeof content !== 'object' || content === null) {
     return (

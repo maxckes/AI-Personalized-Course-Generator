@@ -1,4 +1,4 @@
-# Course.AI - AI Course Generator
+# LearnForge AI - AI Course Generator
 
 A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.
 

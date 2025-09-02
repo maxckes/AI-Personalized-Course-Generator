@@ -19,6 +19,7 @@ import {
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { useTheme } from '~/lib/theme-context';
 
 interface LayoutProps {
   children: ReactNode;
@@ -29,7 +30,7 @@ const { Title, Text } = Typography;
 
 export function Layout({ children }: LayoutProps) {
   const { data: session } = useSession();
-  const [isDark, setIsDark] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -40,9 +41,9 @@ export function Layout({ children }: LayoutProps) {
     setMounted(true);
   }, []);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    message.info(isDark ? 'Switched to light mode' : 'Switched to dark mode');
+  const handleToggleTheme = () => {
+    toggleTheme();
+    message.info(theme === 'light' ? 'Switched to dark mode 🌙' : 'Switched to light mode ☀️');
   };
 
   const handleSignOut = () => {
@@ -59,17 +60,18 @@ export function Layout({ children }: LayoutProps) {
       flexDirection: 'column'
     }}>
         <Header style={{
-          backgroundColor: isDark ? '#1f1f1f' : '#fff',
-          borderBottom: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
+          backgroundColor: 'var(--header-bg)',
+          borderBottom: `1px solid var(--header-border)`,
           padding: '0 16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           position: 'relative',
           zIndex: 999,
-          boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: theme === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
           height: '70px',
-          flexShrink: 0
+          flexShrink: 0,
+          transition: 'all 0.3s ease'
         }}>
           {/* Left Section - Logo and Navigation */}
           <Space align="center">
@@ -88,15 +90,26 @@ export function Layout({ children }: LayoutProps) {
             )}
 
             {/* Logo and Title */}
-            <Space align="center" size="small">
-              <BookOutlined style={{ fontSize: '28px', color: '#1890ff' }} />
-              <Title level={3} style={{ 
-                margin: 0, 
-                color: isDark ? '#fff' : '#000', 
+            <Space align="center" size="small" className="logo-title-container">
+              <BookOutlined
+                style={{
+                  fontSize: 'clamp(24px, 4vw, 28px)',
+                  color: 'var(--logo-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              />
+              <Title level={3} style={{
+                margin: 0,
+                color: 'var(--user-text-color)',
                 fontWeight: 600,
-                fontSize: 'clamp(18px, 5vw, 24px)' // Responsive font size
+                fontSize: 'clamp(18px, 5vw, 24px)',
+                lineHeight: 1.2,
+                display: 'flex',
+                alignItems: 'center'
               }}>
-                Course.AI
+                LearnForge AI
               </Title>
             </Space>
 
@@ -145,11 +158,11 @@ export function Layout({ children }: LayoutProps) {
             <div className="search-bar-container">
               <Input
                 placeholder="Search courses..."
-                prefix={<SearchOutlined style={{ color: isDark ? '#8c8c8c' : '#bfbfbf' }} />}
+                prefix={<SearchOutlined style={{ color: theme === 'dark' ? '#8c8c8c' : '#bfbfbf' }} />}
                 style={{
                   borderRadius: '20px',
-                  backgroundColor: isDark ? '#262626' : '#f5f5f5',
-                  border: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
+                  backgroundColor: theme === 'dark' ? '#262626' : '#f5f5f5',
+                  border: `1px solid ${theme === 'dark' ? '#434343' : '#d9d9d9'}`,
                   height: '36px',
                   width: '100%',
                   minWidth: '200px',
@@ -161,11 +174,11 @@ export function Layout({ children }: LayoutProps) {
             {/* Action Buttons - Compact on mobile */}
             <Space size="small" className="action-buttons">
               {/* Theme Toggle */}
-              <Tooltip title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Switch to dark mode"}>
+              <Tooltip title={mounted ? (theme === 'dark' ? "Switch to light mode ☀️" : "Switch to dark mode 🌙") : "Switch to dark mode 🌙"}>
                 <Button
                   type="text"
-                  icon={mounted ? (isDark ? <SunOutlined /> : <MoonOutlined />) : <MoonOutlined />}
-                  onClick={toggleTheme}
+                  icon={mounted ? (theme === 'dark' ? <SunOutlined /> : <MoonOutlined />) : <MoonOutlined />}
+                  onClick={handleToggleTheme}
                   size="large"
                   style={{ borderRadius: '8px' }}
                 />
@@ -227,14 +240,14 @@ export function Layout({ children }: LayoutProps) {
                     src={session.user?.image}
                     alt={session.user?.name ?? 'User'}
                     size="small"
-                    style={{ border: `2px solid ${isDark ? '#1890ff' : '#40a9ff'}` }}
+                    style={{ border: `2px solid ${theme === 'dark' ? '#4dabf7' : '#40a9ff'}` }}
                   >
                     {session.user?.name?.charAt(0).toUpperCase()}
                   </Avatar>
                   <Text
                     strong
                     style={{
-                      color: isDark ? '#fff' : '#000',
+                      color: 'var(--user-text-color)',
                       maxWidth: 'clamp(60px, 15vw, 120px)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -253,10 +266,29 @@ export function Layout({ children }: LayoutProps) {
         {/* Mobile Navigation Drawer */}
         <Drawer
           title={
-            <Space align="center">
-              <BookOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
-              <Text style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
-                Course.AI
+            <Space align="center" size="small" className="logo-title-container">
+              <BookOutlined
+                style={{
+                  fontSize: 'clamp(20px, 4vw, 24px)',
+                  color: 'var(--logo-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              />
+              <Text
+                style={{
+                  color: 'var(--user-text-color)',
+                  fontWeight: 600,
+                  fontSize: 'clamp(18px, 4vw, 20px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                LearnForge AI
               </Text>
             </Space>
           }
@@ -264,13 +296,15 @@ export function Layout({ children }: LayoutProps) {
           onClose={() => setMobileMenuOpen(false)}
           open={mobileMenuOpen}
           width={280}
-          bodyStyle={{ 
-            backgroundColor: isDark ? '#1f1f1f' : '#fff',
-            padding: '16px'
-          }}
-          headerStyle={{
-            backgroundColor: isDark ? '#1f1f1f' : '#fff',
-            borderBottom: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`
+          styles={{
+            body: {
+              backgroundColor: 'var(--header-bg)',
+              padding: '16px'
+            },
+            header: {
+              backgroundColor: 'var(--header-bg)',
+              borderBottom: `1px solid var(--header-border)`
+            }
           }}
         >
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -365,16 +399,17 @@ export function Layout({ children }: LayoutProps) {
           </Space>
         </Drawer>
 
-        <Content 
+        <Content
           className="scrollable-content"
           style={{
-            backgroundColor: isDark ? '#000' : '#fafafa',
+            backgroundColor: 'var(--main-bg)',
             height: 'calc(100vh - 70px)',
             maxHeight: 'calc(100vh - 70px)',
             padding: 'clamp(8px, 4vw, 16px)',
             overflowY: 'scroll',
             overflowX: 'hidden',
-            flex: 1
+            flex: 1,
+            transition: 'background-color 0.3s ease'
           }}>
           {children}
         </Content>

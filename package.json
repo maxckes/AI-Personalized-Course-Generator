@@ -1,7 +1,7 @@
 {
   "name": "course-ai",
   "version": "1.0.0",
-  "description": "Course.AI - A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.",
+  "description": "LearnForge AI - A modern, professional learning platform that generates personalized AI-powered courses tailored to your learning goals.",
   "private": true,
   "type": "module",
   "keywords": [
@@ -17,15 +17,15 @@
     "trpc"
   ],
   "author": {
-    "name": "Course.AI Team",
-    "email": "team@course.ai"
+    "name": "LearnForge AI Team",
+    "email": "team@learnforge.ai"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/course-ai.git"
   },
-  "homepage": "https://course.ai",
+  "homepage": "https://learnforge.ai",
   "bugs": {
     "url": "https://github.com/yourusername/course-ai/issues"
   },
