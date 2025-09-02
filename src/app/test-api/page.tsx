@@ -23,10 +23,13 @@ import {
 import { api } from "~/trpc/react";
 import { AuthShowcase } from "../_components/AuthShowcase";
 import { Layout as AppLayout } from "~/components/Layout";
+import { useTheme } from "~/lib/theme-context";
 
 export default function ApiTestPage() {
   const [title, setTitle] = useState("My Test Course");
   const [courseIdToArchive, setCourseIdToArchive] = useState("");
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   // tRPC hook to fetch all courses
   const getCourses = api.course.getAll.useQuery();
@@ -98,85 +101,197 @@ export default function ApiTestPage() {
 
   return (
     <AppLayout>
-      <div style={{ 
-        padding: 'clamp(12px, 4vw, 24px)', 
-        maxWidth: '1200px', 
+      <div style={{
+        padding: 'clamp(8px, 3vw, 24px)',
+        maxWidth: 'clamp(320px, 95vw, 1200px)',
         margin: '0 auto',
         width: '100%',
         height: '100%',
         maxHeight: '100%',
         overflowY: 'auto',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        backgroundColor: isDark ? 'transparent' : undefined
       }}>
       <AuthShowcase />
 
-      <Space direction="vertical" size="large" style={{ marginTop: '24px' }}>
-        <Title level={1} style={{ textAlign: 'center', marginBottom: '24px' }}>
+      <Space direction="vertical" size={['large', 'large']} style={{
+        marginTop: 'clamp(16px, 4vw, 32px)',
+        width: '100%'
+      }}>
+        <Title
+          level={1}
+          style={{
+            textAlign: 'center',
+            marginBottom: 'clamp(16px, 4vw, 32px)',
+            fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
+            color: isDark ? 'white' : 'black',
+            lineHeight: 1.2
+          }}
+        >
           🧪 API Test Laboratory
         </Title>
 
-        <Alert message="API Testing Information" description="This page allows you to test all course management APIs. Check the browser console for detailed API responses." type="info" showIcon />
+        <Alert
+          message="API Testing Information"
+          description="This page allows you to test all course management APIs. Check the browser console for detailed API responses."
+          type="info"
+          showIcon
+          style={{
+            borderRadius: 'clamp(6px, 1.5vw, 8px)',
+            fontSize: 'clamp(14px, 3vw, 16px)'
+          }}
+        />
 
         {/* Display Courses */}
-        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Title level={2} style={{ margin: 0 }}>My Courses</Title>
-            <AntBadge count={`${getCourses.data?.length ?? 0} total`} style={{ backgroundColor: '#1890ff' }} />
+        <Card
+          bordered
+          style={{
+            boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+            borderRadius: 'clamp(6px, 1.5vw, 8px)',
+            background: isDark ? '#1a1a1a' : undefined,
+            borderColor: isDark ? '#404040' : undefined
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'clamp(12px, 3vw, 20px)',
+            flexWrap: 'wrap',
+            gap: 'clamp(8px, 2vw, 12px)'
+          }}>
+            <Title
+              level={2}
+              style={{
+                margin: 0,
+                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
+                color: isDark ? 'white' : 'black'
+              }}
+            >
+              My Courses
+            </Title>
+            <AntBadge
+              count={`${getCourses.data?.length ?? 0} total`}
+              style={{
+                backgroundColor: '#1890ff',
+                fontSize: 'clamp(10px, 2vw, 12px)'
+              }}
+            />
           </div>
 
           {getCourses.isLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 'clamp(16px, 4vw, 24px)'
+            }}>
               <Spin size="small" />
-              <Text style={{ marginLeft: '8px' }}>Loading courses...</Text>
+              <Text
+                style={{
+                  marginLeft: 'clamp(8px, 2vw, 12px)',
+                  color: isDark ? '#d9d9d9' : '#8c8c8c',
+                  fontSize: 'clamp(14px, 3vw, 16px)'
+                }}
+              >
+                Loading courses...
+              </Text>
             </div>
           ) : (
-            <Space direction="vertical" size="small">
+            <Space direction="vertical" size={['small', 'small']}>
               {getCourses.data?.length === 0 ? (
-                <Text style={{ color: '#8c8c8c', textAlign: 'center', padding: '16px' }}>
+                <Text
+                  style={{
+                    color: isDark ? '#a6a6a6' : '#8c8c8c',
+                    textAlign: 'center',
+                    padding: 'clamp(16px, 4vw, 24px)',
+                    fontSize: 'clamp(14px, 3vw, 16px)'
+                  }}
+                >
                   No courses found. Create one below!
                 </Text>
               ) : (
                 <List
                   dataSource={getCourses.data}
                   renderItem={(course) => (
-                    <List.Item key={course.id}>
-                      <Card bordered size="small">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <Space direction="vertical" size="small" style={{ flex: 1 }}>
-                            <Space>
-                              <Text strong>{course.title}</Text>
+                    <List.Item key={course.id} style={{ padding: 'clamp(4px, 1vw, 8px) 0' }}>
+                      <Card
+                        bordered
+                        size="small"
+                        style={{
+                          background: isDark ? '#262626' : undefined,
+                          borderColor: isDark ? '#404040' : undefined,
+                          borderRadius: 'clamp(4px, 1vw, 6px)',
+                          width: '100%'
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          flexWrap: 'wrap',
+                          gap: 'clamp(8px, 2vw, 12px)'
+                        }}>
+                          <Space direction="vertical" size={['small', 'small']} style={{ flex: 1, minWidth: '200px' }}>
+                            <Space wrap style={{ gap: 'clamp(4px, 1vw, 8px)' }}>
+                              <Text
+                                strong
+                                style={{
+                                  color: isDark ? 'white' : 'black',
+                                  fontSize: 'clamp(14px, 3vw, 16px)'
+                                }}
+                              >
+                                {course.title}
+                              </Text>
                               <AntBadge
                                 count={course.status}
                                 style={{
                                   backgroundColor: course.status === 'active' ? '#52c41a' : '#d9d9d9',
-                                  color: course.status === 'active' ? 'white' : 'black'
+                                  color: course.status === 'active' ? 'white' : 'black',
+                                  fontSize: 'clamp(10px, 2vw, 12px)'
                                 }}
                               />
                             </Space>
-                            <Text style={{ fontSize: '12px', color: '#8c8c8c' }}>
+                            <Text
+                              style={{
+                                fontSize: 'clamp(11px, 2.5vw, 13px)',
+                                color: isDark ? '#a6a6a6' : '#8c8c8c',
+                                wordBreak: 'break-all'
+                              }}
+                            >
                               ID: {course.id}
                             </Text>
                           </Space>
 
-                          <Space>
+                          <Space style={{ flexShrink: 0 }}>
                             {course.status === 'active' ? (
                               <Button
-                                size="small"
+                                size="middle"
                                 onClick={() => archiveCourse.mutate({ courseId: course.id })}
                                 loading={archiveCourse.isPending}
                                 icon={<ContainerOutlined />}
+                                style={{
+                                  height: 'clamp(32px, 6vw, 36px)',
+                                  fontSize: 'clamp(12px, 2.5vw, 14px)',
+                                  minWidth: 'clamp(80px, 15vw, 100px)'
+                                }}
                               >
-                                Archive
+                                <span className="hide-text-mobile">Archive</span>
                               </Button>
                             ) : (
                               <Button
-                                size="small"
+                                size="middle"
                                 type="primary"
                                 onClick={() => restoreCourse.mutate({ courseId: course.id })}
                                 loading={restoreCourse.isPending}
                                 icon={<UndoOutlined />}
+                                style={{
+                                  height: 'clamp(32px, 6vw, 36px)',
+                                  fontSize: 'clamp(12px, 2.5vw, 14px)',
+                                  minWidth: 'clamp(80px, 15vw, 100px)'
+                                }}
                               >
-                                Restore
+                                <span className="hide-text-mobile">Restore</span>
                               </Button>
                             )}
                           </Space>
@@ -190,22 +305,64 @@ export default function ApiTestPage() {
           )}
         </Card>
 
-        <Divider />
+        <Divider style={{
+          borderColor: isDark ? '#404040' : '#d9d9d9',
+          margin: 'clamp(20px, 5vw, 32px) 0'
+        }} />
 
         {/* Generate Course */}
-        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <Title level={3} style={{ marginBottom: '16px' }}>Generate New Course</Title>
-          <Space direction="vertical" size="middle">
+        <Card
+          bordered
+          style={{
+            boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+            borderRadius: 'clamp(6px, 1.5vw, 8px)',
+            background: isDark ? '#1a1a1a' : undefined,
+            borderColor: isDark ? '#404040' : undefined
+          }}
+        >
+          <Title
+            level={3}
+            style={{
+              marginBottom: 'clamp(12px, 3vw, 20px)',
+              fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)',
+              color: isDark ? 'white' : 'black'
+            }}
+          >
+            Generate New Course
+          </Title>
+          <Space direction="vertical" size={['middle', 'middle']}>
             <div>
-              <Text strong style={{ display: 'block', marginBottom: '8px' }}>Course Title</Text>
+              <Text
+                strong
+                style={{
+                  display: 'block',
+                  marginBottom: 'clamp(6px, 1.5vw, 10px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  color: isDark ? '#d9d9d9' : 'black'
+                }}
+              >
+                Course Title
+              </Text>
               <Input
                 placeholder="Enter course title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 status={title.length > 0 && title.length < 3 ? 'error' : ''}
+                style={{
+                  height: 'clamp(40px, 8vw, 48px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  borderRadius: 'clamp(4px, 1vw, 6px)'
+                }}
               />
               {title.length > 0 && title.length < 3 && (
-                <Text type="danger" style={{ fontSize: '12px', marginTop: '4px' }}>
+                <Text
+                  type="danger"
+                  style={{
+                    fontSize: 'clamp(11px, 2.5vw, 13px)',
+                    marginTop: 'clamp(3px, 1vw, 6px)',
+                    display: 'block'
+                  }}
+                >
                   Title must be at least 3 characters
                 </Text>
               )}
@@ -217,6 +374,11 @@ export default function ApiTestPage() {
               loading={generateCourse.isPending}
               disabled={title.length < 3}
               block
+              style={{
+                height: 'clamp(44px, 8vw, 48px)',
+                fontSize: 'clamp(14px, 3vw, 16px)',
+                borderRadius: 'clamp(6px, 1.5vw, 8px)'
+              }}
             >
               {generateCourse.isPending ? 'Generating...' : 'Generate Course'}
             </Button>
@@ -224,15 +386,47 @@ export default function ApiTestPage() {
         </Card>
         
         {/* Manual Archive Course */}
-        <Card bordered style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <Title level={3} style={{ marginBottom: '16px' }}>Manual Archive (by ID)</Title>
-          <Space direction="vertical" size="middle">
+        <Card
+          bordered
+          style={{
+            boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+            borderRadius: 'clamp(6px, 1.5vw, 8px)',
+            background: isDark ? '#1a1a1a' : undefined,
+            borderColor: isDark ? '#404040' : undefined
+          }}
+        >
+          <Title
+            level={3}
+            style={{
+              marginBottom: 'clamp(12px, 3vw, 20px)',
+              fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)',
+              color: isDark ? 'white' : 'black'
+            }}
+          >
+            Manual Archive (by ID)
+          </Title>
+          <Space direction="vertical" size={['middle', 'middle']}>
             <div>
-              <Text strong style={{ display: 'block', marginBottom: '8px' }}>Course ID</Text>
+              <Text
+                strong
+                style={{
+                  display: 'block',
+                  marginBottom: 'clamp(6px, 1.5vw, 10px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  color: isDark ? '#d9d9d9' : 'black'
+                }}
+              >
+                Course ID
+              </Text>
               <Input
                 placeholder="Enter Course ID to archive..."
                 value={courseIdToArchive}
                 onChange={(e) => setCourseIdToArchive(e.target.value)}
+                style={{
+                  height: 'clamp(40px, 8vw, 48px)',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  borderRadius: 'clamp(4px, 1vw, 6px)'
+                }}
               />
             </div>
             <Button
@@ -241,6 +435,11 @@ export default function ApiTestPage() {
               loading={archiveCourse.isPending}
               disabled={!courseIdToArchive.trim()}
               block
+              style={{
+                height: 'clamp(44px, 8vw, 48px)',
+                fontSize: 'clamp(14px, 3vw, 16px)',
+                borderRadius: 'clamp(6px, 1.5vw, 8px)'
+              }}
             >
               {archiveCourse.isPending ? 'Archiving...' : 'Archive Course'}
             </Button>

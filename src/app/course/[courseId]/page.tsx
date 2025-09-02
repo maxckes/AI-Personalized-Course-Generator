@@ -35,6 +35,7 @@ const { Sider, Content } = Layout;
 import { api } from "~/trpc/react";
 import { ContentRenderer } from "~/components/ContentRenderer";
 import { Layout as AppLayout } from "~/components/Layout";
+import { useTheme } from "~/lib/theme-context";
 
 // Define proper TypeScript interfaces for the data structure
 interface UserProgress {
@@ -72,6 +73,8 @@ export default function CoursePage() {
   const courseId = params?.courseId as string;
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { theme } = useTheme();
 
   // Add state
   const [pendingModules, setPendingModules] = useState<string[]>([]);
@@ -139,6 +142,11 @@ export default function CoursePage() {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
         setSidebarCollapsed(true);
+        setMobileSidebarOpen(false);
+      } else {
+        // On larger screens, default to expanded
+        setSidebarCollapsed(false);
+        setMobileSidebarOpen(false);
       }
     };
 
@@ -149,13 +157,34 @@ export default function CoursePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Handle mobile sidebar overlay click
+  const handleMobileOverlayClick = () => {
+    setMobileSidebarOpen(false);
+  };
+
   if (isLoading) {
     return (
       <Layout>
-        <Content style={{ padding: '48px', textAlign: 'center' }}>
-          <Spin size="large" />
-          <div style={{ marginTop: '16px' }}>
-            <Text>Loading course...</Text>
+        <Content style={{
+          padding: 'clamp(32px, 8vw, 48px)',
+          textAlign: 'center',
+          background: 'var(--course-content-bg)',
+          color: 'var(--course-text-primary)',
+          minHeight: '50vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div>
+            <Spin size="large" />
+            <div style={{ marginTop: 'clamp(16px, 4vw, 24px)' }}>
+              <Text style={{
+                color: 'var(--course-text-secondary)',
+                fontSize: 'clamp(14px, 4vw, 16px)'
+              }}>
+                Loading course...
+              </Text>
+            </div>
           </div>
         </Content>
       </Layout>
@@ -165,16 +194,44 @@ export default function CoursePage() {
   if (error || !typedCourse) {
     return (
       <Layout>
-        <Content style={{ padding: '48px', maxWidth: '600px', margin: '0 auto' }}>
-          <Alert
-            message="Course Not Found"
-            description={(error as { message?: string })?.message ?? "The course you're looking for doesn't exist or you don't have access to it."}
-            type="error"
-            showIcon
-          />
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <Button type="primary" icon={<ArrowLeftOutlined />}>
-              <Link href="/dashboard" style={{ color: 'inherit' }}>Back to Dashboard</Link>
+        <Content style={{
+          padding: 'clamp(32px, 8vw, 48px)',
+          maxWidth: 'clamp(320px, 90vw, 600px)',
+          margin: '0 auto',
+          background: 'var(--course-content-bg)',
+          color: 'var(--course-text-primary)',
+          minHeight: '50vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{ width: '100%', textAlign: 'center' }}>
+            <Alert
+              message="Course Not Found"
+              description={(error as { message?: string })?.message ?? "The course you're looking for doesn't exist or you don't have access to it."}
+              type="error"
+              showIcon
+              style={{
+                marginBottom: 'clamp(24px, 6vw, 32px)',
+                borderRadius: 'clamp(8px, 2vw, 12px)',
+                fontSize: 'clamp(14px, 3vw, 16px)'
+              }}
+            />
+            <Button
+              type="primary"
+              icon={<ArrowLeftOutlined />}
+              size="large"
+              style={{
+                backgroundColor: 'var(--course-progress-completed)',
+                borderColor: 'var(--course-progress-completed)',
+                height: 'clamp(44px, 8vw, 48px)',
+                fontSize: 'clamp(14px, 3vw, 16px)',
+                borderRadius: 'clamp(6px, 1.5vw, 8px)'
+              }}
+            >
+              <Link href="/dashboard" style={{ color: 'inherit', textDecoration: 'none' }}>
+                Back to Dashboard
+              </Link>
             </Button>
           </div>
         </Content>
@@ -217,12 +274,33 @@ export default function CoursePage() {
         display: 'flex',
         flexDirection: 'row'
       }} className="course-page-sidebar">
+        {/* Mobile Sidebar Overlay */}
+        {mobileSidebarOpen && (
+          <div 
+            className={`mobile-sidebar-overlay ${mobileSidebarOpen ? 'active' : ''}`}
+            onClick={handleMobileOverlayClick}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+              opacity: mobileSidebarOpen ? 1 : 0,
+              visibility: mobileSidebarOpen ? 'visible' : 'hidden',
+              transition: 'opacity 0.3s ease, visibility 0.3s ease'
+            }}
+          />
+        )}
+
         {/* Left Sidebar - Course Navigation */}
         <Sider
           width={350}
+          className={mobileSidebarOpen ? 'mobile-sidebar-open' : ''}
           style={{
-            background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-            borderRight: '1px solid #e5e7eb',
+            background: 'var(--course-sidebar-bg)',
+            borderRight: `1px solid var(--course-sidebar-border)`,
             width: sidebarCollapsed ? "0px" : "350px",
             maxWidth: sidebarCollapsed ? "0px" : "350px",
             minWidth: sidebarCollapsed ? "0px" : "350px",
@@ -231,7 +309,8 @@ export default function CoursePage() {
             maxHeight: '100%',
             flexShrink: 0,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)'
+            boxShadow: theme === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.3)' : '2px 0 8px rgba(0, 0, 0, 0.05)',
+            zIndex: window?.innerWidth <= 768 ? 1000 : 'auto'
           }}
           breakpoint="lg"
           collapsedWidth={0}
@@ -257,17 +336,17 @@ export default function CoursePage() {
               <Breadcrumb
                 items={[
                   {
-                    title: <Link href="/dashboard" style={{ color: '#1c7ed6', fontSize: '12px' }}>Courses</Link>
+                    title: <Link href="/dashboard" style={{ color: 'var(--logo-color)', fontSize: '12px' }}>Courses</Link>
                   },
                   {
-                    title: <Text style={{ color: '#6b7280', fontSize: '12px' }}>{typedCourse.title}</Text>
+                    title: <Text style={{ color: 'var(--course-text-secondary)', fontSize: '12px' }}>{typedCourse.title}</Text>
                   }
                 ]}
                 style={{ marginBottom: '12px' }}
               />
 
               <Title level={4} style={{
-                color: '#111827',
+                color: 'var(--course-text-primary)',
                 lineHeight: 1.3,
                 margin: '0 0 8px 0',
                 fontSize: '18px',
@@ -281,7 +360,7 @@ export default function CoursePage() {
               {typedCourse.description && (
                 <Text style={{
                   fontSize: '14px',
-                  color: '#6b7280',
+                  color: 'var(--course-text-secondary)',
                   lineHeight: 1.5,
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word',
@@ -295,17 +374,17 @@ export default function CoursePage() {
             {/* Progress Overview */}
             <Card
               style={{
-                background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                border: '1px solid #e5e7eb',
+                background: 'var(--course-card-bg)',
+                border: `1px solid var(--course-card-border)`,
                 borderRadius: '12px',
                 marginBottom: '24px',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.04)',
                 padding: '8px'
               }}
             >
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <Text style={{ fontWeight: 600, color: '#111827', fontSize: '15px' }}>Course Progress</Text>
+                  <Text style={{ fontWeight: 600, color: 'var(--course-text-primary)', fontSize: '15px' }}>Course Progress</Text>
                   <AntBadge
                     count={
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -316,7 +395,7 @@ export default function CoursePage() {
                       </div>
                     }
                     style={{
-                      backgroundColor: progressPercentage === 100 ? '#10b981' : '#3b82f6',
+                      backgroundColor: progressPercentage === 100 ? 'var(--course-progress-completed-full)' : 'var(--course-progress-completed)',
                       padding: '6px 10px',
                       borderRadius: '8px',
                       color: 'white'
@@ -325,8 +404,8 @@ export default function CoursePage() {
                 </div>
                 <Progress
                   percent={progressPercentage}
-                  strokeColor={progressPercentage === 100 ? '#10b981' : '#3b82f6'}
-                  trailColor="#e5e7eb"
+                  strokeColor={progressPercentage === 100 ? 'var(--course-progress-completed-full)' : 'var(--course-progress-completed)'}
+                  trailColor="var(--course-progress-bg)"
                   strokeWidth={8}
                   showInfo={false}
                 />
@@ -336,12 +415,12 @@ export default function CoursePage() {
                   alignItems: 'center',
                   marginTop: '8px'
                 }}>
-                  <Text style={{ fontSize: '12px', color: '#6b7280' }}>
+                  <Text style={{ fontSize: '12px', color: 'var(--course-text-secondary)' }}>
                     {completedModules} of {totalModules} modules completed
                   </Text>
                   <Text style={{
                     fontSize: '12px',
-                    color: progressPercentage === 100 ? '#10b981' : '#6b7280',
+                    color: progressPercentage === 100 ? 'var(--course-progress-completed-full)' : 'var(--course-text-secondary)',
                     fontWeight: 500
                   }}>
                     {progressPercentage === 100 ? '🎉 Complete!' : `${totalModules - completedModules} remaining`}
@@ -351,12 +430,17 @@ export default function CoursePage() {
             </Card>
                   <br></br>
             {/* Week/Module Navigation */}
-            <div style={{ }}>
+            <div style={{
+                background: 'var(--course-card-bg)',
+                border: `1px solid var(--course-card-border)`,
+                borderRadius: '12px',
+                marginBottom: '24px',
+                boxShadow: theme === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.04)',
+                padding: '8px'
+              }}>
               <Collapse
                 bordered={false}
-                style={{
-                  background: 'transparent'
-                }}
+               
                 items={typedCourse.weeks.map((week: WeekData) => ({
                   key: week.id,
                   label: (
@@ -369,7 +453,7 @@ export default function CoursePage() {
                     }}>
                       <div style={{ flex: 1 }}>
                         <Text style={{
-                          color: '#111827',
+                          color: 'var(--course-text-primary)',
                           fontWeight: 600,
                           fontSize: '14px',
                           wordBreak: 'break-word',
@@ -384,14 +468,14 @@ export default function CoursePage() {
                           <Progress
                             percent={week.modules.length > 0 ? (week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length / week.modules.length) * 100 : 0}
                             size="small"
-                            strokeColor="#3b82f6"
-                            trailColor="#e5e7eb"
+                            strokeColor="var(--course-progress-completed)"
+                            trailColor="var(--course-progress-bg)"
                             style={{ flex: 1, maxWidth: '120px' }}
                             showInfo={false}
                           />
                           <Text style={{
                             fontSize: '11px',
-                            color: '#6b7280',
+                            color: 'var(--course-text-secondary)',
                             fontWeight: 500,
                             minWidth: '40px',
                             display:"flex",
@@ -404,12 +488,12 @@ export default function CoursePage() {
                       </div>
                       <AntBadge
                         count={
-                          week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ? 
-                            <CheckCircleOutlined style={{ fontSize: '12px', color: 'white' }} /> : 
+                          week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ?
+                            <CheckCircleOutlined style={{ fontSize: '12px', color: 'white' }} /> :
                             `${week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length}/${week.modules.length}`
                         }
                         style={{
-                          backgroundColor: week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ? '#10b981' : '#3b82f6',
+                          backgroundColor: week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ? 'var(--course-progress-completed-full)' : 'var(--course-progress-completed)',
                           fontSize: '10px',
                           borderRadius: '6px',
                           marginLeft: '12px',
@@ -434,25 +518,24 @@ export default function CoursePage() {
                           style={{
                             cursor: 'pointer',
                             background: isSelected
-                              ? 'linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)'
+                              ? 'var(--course-card-selected-bg)'
                               : isCompleted
-                                ? 'linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)'
-                                : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                                ? 'var(--course-card-completed-bg)'
+                                : 'var(--course-card-bg)',
                             borderColor: isSelected
-                              ? '#3b82f6'
+                              ? 'var(--course-card-selected-border)'
                               : isCompleted
-                                ? '#10b981'
-                                : '#e5e7eb',
+                                ? 'var(--course-card-completed-border)'
+                                : 'var(--course-card-border)',
                             marginBottom: '8px',
                             borderRadius: '8px',
                             transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                             borderWidth: isSelected ? '2px' : '1px',
-                            boxShadow: isSelected 
-                              ? '0 4px 12px rgba(59, 130, 246, 0.15)' 
-                              : '0 2px 4px rgba(0, 0, 0, 0.04)'
+                            boxShadow: isSelected
+                              ? (theme === 'dark' ? '0 4px 12px rgba(77, 171, 247, 0.25)' : '0 4px 12px rgba(59, 130, 246, 0.15)')
+                              : (theme === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.15)' : '0 2px 4px rgba(0, 0, 0, 0.04)')
                           }}
                           onClick={() => setSelectedModuleId(module.id)}
-                          hoverable
                         >
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {/* Title Section */}
@@ -465,7 +548,7 @@ export default function CoursePage() {
                               <Text
                                 style={{
                                   fontWeight: isSelected ? 600 : 500,
-                                  color: isSelected ? '#1e40af' : '#111827',
+                                  color: isSelected ? 'var(--course-text-selected)' : 'var(--course-text-primary)',
                                   lineHeight: 1.4,
                                   fontSize: '13px',
                                   flex: 1,
@@ -501,8 +584,8 @@ export default function CoursePage() {
                                   flex: 1,
                                   minWidth: '90px',
                                   fontWeight: 500,
-                                  backgroundColor: isCompleted ? '#10b981' : undefined,
-                                  borderColor: isCompleted ? '#10b981' : undefined
+                                  backgroundColor: isCompleted ? 'var(--course-progress-completed-full)' : undefined,
+                                  borderColor: isCompleted ? 'var(--course-progress-completed-full)' : undefined
                                 }}
                               >
                                 {isCompleted ? "Done" : "Mark Complete"}
@@ -516,9 +599,9 @@ export default function CoursePage() {
                   </div>
                 ),
                 style: {
-                  border: 'none',
+                  border: 'var(--course-collapse-border)',
                   marginBottom: '8px',
-                  background: 'transparent',
+                  background: 'var(--course-collapse-bg)',
                   borderRadius: '8px'
                 }
               }))}
@@ -529,57 +612,72 @@ export default function CoursePage() {
         </div>
       </Sider>
 
+        {/* Sidebar Toggle Button */}
+        <div style={{
+          position: 'fixed',
+          top: 'clamp(76px, 10vh, 90px)',
+          left: sidebarCollapsed ? 'clamp(16px, 3vw, 20px)' : 'calc(350px - 60px)',
+          zIndex: 1001,
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          pointerEvents: 'auto'
+        }}>
+          <Button
+            type="text"
+            icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => {
+              if (window.innerWidth <= 768) {
+                setMobileSidebarOpen(!mobileSidebarOpen);
+              } else {
+                setSidebarCollapsed(!sidebarCollapsed);
+              }
+            }}
+            style={{
+              backgroundColor: theme === 'dark' ? 'rgba(31, 31, 31, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              border: `1px solid ${theme === 'dark' ? '#434343' : '#e5e7eb'}`,
+              borderRadius: 'clamp(8px, 2vw, 10px)',
+              boxShadow: theme === 'dark' ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.12)',
+              backdropFilter: 'blur(12px)',
+              padding: 'clamp(6px, 1.5vw, 8px)',
+              width: 'clamp(44px, 10vw, 48px)',
+              height: 'clamp(44px, 10vw, 48px)',
+              minWidth: '44px',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 'clamp(16px, 4vw, 18px)'
+            }}
+            size="large"
+          />
+        </div>
+
         {/* Main Content Area */}
         <Layout className="layout-container" style={{
           flex: 1,
           overflow: 'hidden',
-          width: sidebarCollapsed ? '100%' : 'calc(100% - 350px)',
           minWidth: 0,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'none'
         }}>
-          {/* Sidebar Toggle Button */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: sidebarCollapsed ? '20px' : '370px',
-            zIndex: 1000,
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}>
-            <Button
-              type="text"
-              icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #e5e7eb',
-                borderRadius: '10px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                backdropFilter: 'blur(12px)',
-                padding: '8px',
-                width: '44px',
-                height: '44px'
-              }}
-              size="large"
-            />
-          </div>
 
           <Content
             className="scrollable-content"
             style={{
-              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+              background: 'var(--course-content-bg)',
               height: '100%',
               maxHeight: '100%',
               padding: '0',
               overflowY: 'scroll',
               overflowX: 'hidden',
               width: '100%',
-              maxWidth: '100%'
+              maxWidth: '100%',
+              flex: 1,
+              minWidth: 0
             }}>
           <div style={{
             maxWidth: '1200px',
             margin: '0 auto',
             width: '100%',
-            padding: '80px clamp(20px, 4vw, 40px) 40px clamp(20px, 4vw, 40px)',
+            padding: 'clamp(60px, 10vh, 80px) clamp(16px, 3vw, 32px) clamp(32px, 5vw, 40px) clamp(16px, 3vw, 32px)',
             boxSizing: 'border-box',
             minHeight: '100%'
           }}>
@@ -595,61 +693,67 @@ export default function CoursePage() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: '60vh',
+                minHeight: 'clamp(400px, 60vh, 600px)',
                 textAlign: 'center',
-                padding: '64px 48px',
+                padding: 'clamp(32px, 8vw, 64px) clamp(24px, 6vw, 48px)',
                 margin: '0 auto',
-                maxWidth: '600px',
-                background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                borderRadius: '20px',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.06)'
+                maxWidth: 'clamp(320px, 90vw, 600px)',
+                width: '100%',
+                background: 'var(--course-empty-state-bg)',
+                borderRadius: 'clamp(12px, 3vw, 20px)',
+                border: `1px solid var(--course-empty-state-border)`,
+                boxShadow: theme === 'dark' ? '0 10px 40px rgba(0, 0, 0, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.06)'
               }}>
                 <div style={{
-                  background: 'linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)',
+                  background: 'var(--course-empty-state-icon-bg)',
                   borderRadius: '50%',
-                  padding: '32px',
-                  marginBottom: '32px',
-                  boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
+                  padding: 'clamp(20px, 6vw, 32px)',
+                  marginBottom: 'clamp(20px, 5vw, 32px)',
+                  boxShadow: theme === 'dark' ? '0 8px 32px rgba(77, 171, 247, 0.25)' : '0 8px 32px rgba(59, 130, 246, 0.15)',
+                  border: `2px solid var(--course-empty-state-icon-border)`
                 }}>
                   <BookOutlined style={{
-                    fontSize: '56px',
-                    color: '#3b82f6',
+                    fontSize: 'clamp(40px, 12vw, 56px)',
+                    color: 'var(--logo-color)',
                     opacity: 0.9
                   }} />
                 </div>
                 <Title level={2} style={{
-                  color: '#111827',
-                  margin: '0 0 16px 0',
-                  fontSize: '28px',
+                  color: 'var(--course-text-primary)',
+                  margin: '0 0 clamp(12px, 3vw, 16px) 0',
+                  fontSize: 'clamp(20px, 6vw, 28px)',
                   fontWeight: 700,
                   lineHeight: 1.2
                 }}>
                   Select a Module to Begin
                 </Title>
                 <Text style={{
-                  color: '#6b7280',
-                  maxWidth: '500px',
+                  color: 'var(--course-text-secondary)',
+                  maxWidth: 'clamp(280px, 80vw, 500px)',
                   lineHeight: 1.7,
-                  fontSize: '16px',
-                  marginBottom: '32px'
+                  fontSize: 'clamp(14px, 4vw, 16px)',
+                  marginBottom: 'clamp(20px, 5vw, 32px)'
                 }}>
                   Choose a module from the sidebar to start learning. Your progress will be automatically saved as you complete each section.
                 </Text>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  padding: '16px 24px',
-                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                  borderRadius: '12px',
-                  border: '1px solid #bfdbfe'
+                  justifyContent: 'center',
+                  gap: 'clamp(8px, 2vw, 12px)',
+                  padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)',
+                  background: 'var(--course-empty-state-icon-bg)',
+                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  border: `1px solid var(--course-empty-state-icon-border)`,
+                  width: '100%',
+                  maxWidth: '400px'
                 }}>
-                  <span style={{ fontSize: '20px' }}>👈</span>
+                  <span style={{ fontSize: 'clamp(16px, 5vw, 20px)' }}>👈</span>
                   <Text style={{
-                    color: '#1e40af',
-                    fontSize: '14px',
-                    fontWeight: 600
+                    color: 'var(--course-empty-state-text)',
+                    fontSize: 'clamp(12px, 3vw, 14px)',
+                    fontWeight: 600,
+                    textAlign: 'center'
                   }}>
                     Click on any module in the sidebar to get started
                   </Text>

@@ -2,6 +2,7 @@
 
 import { Typography, Button, Space } from 'antd';
 import { BookOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { useTheme } from '~/lib/theme-context';
 
 interface EmptyStateProps {
   title: string;
@@ -22,18 +23,28 @@ export function EmptyState({
   onAction,
   variant = 'default'
 }: EmptyStateProps) {
-  const isDark = false; // TODO: Implement proper theme detection
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const getIcon = () => {
     if (icon) return icon;
 
     switch (variant) {
       case 'search':
-        return <SearchOutlined style={{ fontSize: '48px', color: isDark ? '#8c8c8c' : '#bfbfbf' }} />;
+        return <SearchOutlined style={{
+          fontSize: 'clamp(32px, 10vw, 48px)',
+          color: isDark ? '#8c8c8c' : '#bfbfbf'
+        }} />;
       case 'create':
-        return <PlusOutlined style={{ fontSize: '48px', color: isDark ? '#40a9ff' : '#1890ff' }} />;
+        return <PlusOutlined style={{
+          fontSize: 'clamp(32px, 10vw, 48px)',
+          color: isDark ? '#40a9ff' : '#1890ff'
+        }} />;
       default:
-        return <BookOutlined style={{ fontSize: '48px', color: isDark ? '#8c8c8c' : '#bfbfbf' }} />;
+        return <BookOutlined style={{
+          fontSize: 'clamp(32px, 10vw, 48px)',
+          color: isDark ? '#8c8c8c' : '#bfbfbf'
+        }} />;
     }
   };
 
@@ -48,31 +59,66 @@ export function EmptyState({
 
   return (
     <div
-      className="flex items-center justify-center p-8"
+      className="flex items-center justify-center"
       style={{
         background: isDark ? '#262626' : '#ffffff',
-        borderRadius: '8px',
+        borderRadius: 'clamp(8px, 2vw, 12px)',
         border: isDark ? '1px solid #434343' : '1px solid #d9d9d9',
-        minHeight: '300px'
+        minHeight: 'clamp(250px, 50vh, 400px)',
+        padding: 'clamp(16px, 5vw, 32px)',
+        width: '100%',
+        maxWidth: '100%'
       }}
     >
-      <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', maxWidth: '400px' }}>
+      <Space
+        direction="vertical"
+        size={['small', 'large']}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          width: '100%',
+          maxWidth: 'clamp(280px, 80vw, 500px)'
+        }}
+      >
         <div
           style={{
-            padding: '24px',
+            padding: 'clamp(16px, 6vw, 24px)',
             background: isDark ? '#1a1a1a' : '#fafafa',
-            borderRadius: '12px',
-            border: isDark ? '1px solid #303030' : '1px solid #f0f0f0'
+            borderRadius: 'clamp(8px, 2vw, 12px)',
+            border: isDark ? '1px solid #303030' : '1px solid #f0f0f0',
+            width: 'clamp(60px, 20vw, 80px)',
+            height: 'clamp(60px, 20vw, 80px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto'
           }}
         >
           {getIcon()}
         </div>
 
-        <Space direction="vertical" size="small">
-          <Title level={3} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>
+        <Space direction="vertical" size={['small', 'small']}>
+          <Title
+            level={3}
+            style={{
+              color: isDark ? 'white' : 'black',
+              margin: 0,
+              fontSize: 'clamp(18px, 5vw, 24px)',
+              lineHeight: 1.3
+            }}
+          >
             {title}
           </Title>
-          <Text style={{ color: isDark ? '#a6a6a6' : '#8c8c8c', lineHeight: 1.6 }}>
+          <Text
+            style={{
+              color: isDark ? '#a6a6a6' : '#8c8c8c',
+              lineHeight: 1.6,
+              fontSize: 'clamp(14px, 4vw, 16px)',
+              maxWidth: '100%'
+            }}
+          >
             {description}
           </Text>
         </Space>
@@ -82,7 +128,13 @@ export function EmptyState({
             icon={variant === 'create' ? <PlusOutlined /> : undefined}
             onClick={onAction}
             type={getActionType()}
-            size="middle"
+            size="large"
+            block
+            style={{
+              height: 'clamp(40px, 8vw, 48px)',
+              fontSize: 'clamp(14px, 3vw, 16px)',
+              minWidth: '120px'
+            }}
           >
             {actionLabel}
           </Button>

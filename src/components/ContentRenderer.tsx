@@ -84,55 +84,75 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
   };
 
     return (
-    <div style={{ 
-      height: '100%', 
+    <div style={{
+      height: '100%',
       maxHeight: '100%',
       width: '100%',
       maxWidth: '100%',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      padding: 'clamp(8px, 2vw, 20px)',
+      boxSizing: 'border-box'
     }}>
-      {/* Compact Module Header with Theme Toggle */}
+      {/* Responsive Module Header with Theme Toggle */}
       <Card
+        className="content-header-card"
         style={{
           background: isDark ? '#1a1a1a' : `linear-gradient(135deg, ${getModuleColor() === 'blue' ? '#e6f7ff' : getModuleColor() === 'red' ? '#fff2f0' : getModuleColor() === 'green' ? '#f6ffed' : '#fafafa'} 0%, #ffffff 100%)`,
           borderColor: localCompleted ? '#52c41a' : (getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'),
           width: '100%',
           flexShrink: 0,
-          marginBottom: '16px'
+          marginBottom: 'clamp(12px, 3vw, 20px)',
+          borderRadius: 'clamp(8px, 2vw, 12px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+        }}
+        bodyStyle={{
+          padding: 'clamp(16px, 4vw, 24px)'
         }}
       >
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
           flexWrap: 'wrap',
-          gap: '12px'
+          gap: 'clamp(12px, 3vw, 20px)',
+          padding: 'clamp(16px, 4vw, 24px)',
+          width: '100%'
         }}>
-          <Space align="center" style={{ flex: 1, minWidth: '200px' }}>
+          <Space align="center" style={{ 
+            flex: 1, 
+            minWidth: 'clamp(200px, 50vw, 300px)',
+            maxWidth: '100%'
+          }}>
             <div style={{
-              padding: '8px',
+              padding: 'clamp(6px, 1.5vw, 10px)',
               borderRadius: '50%',
               backgroundColor: isDark ? '#2a2a2a' : (getModuleColor() === 'blue' ? '#bae7ff' : getModuleColor() === 'red' ? '#ffccc7' : getModuleColor() === 'green' ? '#d9f7be' : '#f0f0f0'),
-              border: isDark ? '1px solid #404040' : `1px solid ${getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'}`
+              border: isDark ? '1px solid #404040' : `1px solid ${getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'}`,
+              flexShrink: 0
             }}>
               {getModuleIcon()}
             </div>
 
-            <Space direction="vertical" size={4}>
-              <Space>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Space direction="vertical" size={['small', 'small']} style={{ width: '100%' }}>
+              <Space wrap style={{ gap: 'clamp(4px, 1vw, 8px)' }}>
                 <AntBadge
                   count={module.contentType.toLowerCase()}
                   style={{
-                    backgroundColor: getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#6b7280'
+                    backgroundColor: getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#6b7280',
+                    fontSize: 'clamp(10px, 2vw, 12px)'
                   }}
                 />
 
                 {localCompleted && (
                   <AntBadge
                     count="✨ Done"
-                    style={{ backgroundColor: '#52c41a' }}
+                    style={{
+                      backgroundColor: '#52c41a',
+                      fontSize: 'clamp(10px, 2vw, 12px)'
+                    }}
                   />
                 )}
               </Space>
@@ -140,54 +160,73 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
               <Title
                 level={2}
                 style={{
-                  fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
+                  fontSize: 'clamp(1.2rem, 4.5vw, 1.75rem)',
                   fontWeight: 600,
                   color: isDark ? 'white' : 'black',
                   margin: 0,
-                  lineHeight: 1.3
+                  lineHeight: 1.3,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  maxWidth: '100%'
                 }}
               >
                 {module.title}
               </Title>
-            </Space>
+              </Space>
+            </div>
           </Space>
 
-          <Space style={{ flexShrink: 0 }}>
-            <ThemeToggle />
+                    <div style={{
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: 'clamp(8px, 2vw, 12px)',
+            alignItems: 'flex-end',
+            minWidth: 'fit-content'
+          }}>
+            <Space style={{ gap: 'clamp(6px, 1.5vw, 10px)' }}>
+              <ThemeToggle />
+            </Space>
             <Button
               type={localCompleted ? "default" : "primary"}
               icon={localCompleted ? <TrophyOutlined /> : <ClockCircleOutlined />}
               onClick={handleToggleComplete}
+              aria-label={localCompleted ? "Mark module as incomplete" : "Mark module as complete"}
               style={{
                 backgroundColor: localCompleted ? '#52c41a' : undefined,
                 borderColor: localCompleted ? '#52c41a' : undefined,
-                fontSize: 'clamp(12px, 2.5vw, 14px)'
+                fontSize: 'clamp(13px, 3vw, 16px)',
+                height: 'clamp(40px, 8vw, 48px)',
+                minWidth: 'clamp(100px, 18vw, 140px)',
+                fontWeight: 500
               }}
-              size="middle"
+              size="large"
             >
-              <span className="hide-text-mobile">{localCompleted ? "✅ Done" : "Complete"}</span>
-              <span className="show-text-mobile" style={{ display: 'none' }}>{localCompleted ? "✅" : "⏱"}</span>
+              <span className="hide-text-mobile">{localCompleted ? "✅ Complete" : "Mark Done"}</span>
+              <span className="show-text-mobile" style={{ display: 'none' }}>{localCompleted ? "✅" : "✓"}</span>
             </Button>
-          </Space>
+          </div>
         </div>
       </Card>
 
-      {/* Streamlined Content Area */}
+      {/* Responsive Content Area */}
       <div
-        className="scrollable-content content-text"
+        className="scrollable-content content-text responsive-content-area"
         style={{
           flex: 1,
           height: '100%',
           maxHeight: '100%',
           background: isDark
-            ? 'rgba(31, 41, 55, 0.3)'
-            : 'rgba(249, 250, 251, 0.5)',
-          borderRadius: '8px',
-          padding: 'clamp(12px, 3vw, 16px)',
+            ? 'rgba(31, 41, 55, 0.4)'
+            : 'rgba(249, 250, 251, 0.7)',
+          borderRadius: 'clamp(8px, 2vw, 12px)',
+          padding: 'clamp(16px, 4vw, 24px)',
           width: '100%',
           boxSizing: 'border-box',
-          overflowY: 'scroll',
-          overflowX: 'hidden'
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)'
         }}
       >
         {module.contentType === 'READING' && (
@@ -206,11 +245,13 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
   );
 }
 
-// Compact Text-to-Speech Component with ElevenLabs
+// Responsive Text-to-Speech Component with ElevenLabs
 function CompactTextToSpeech({ text }: { text: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const ELEVENLABS_API_KEY = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
   // Free tier voices - these are available on ElevenLabs free plan
@@ -242,7 +283,7 @@ function CompactTextToSpeech({ text }: { text: string }) {
     setIsLoading(true);
     try {
       const cleanText = getCleanText(text);
-      const voiceId = VOICE_IDS[0]; // Use first voice ID
+      const voiceId = VOICE_IDS[0];
 
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
         method: 'POST',
@@ -253,14 +294,13 @@ function CompactTextToSpeech({ text }: { text: string }) {
         },
         body: JSON.stringify({
           text: cleanText,
-          model_id: 'eleven_monolingual_v1', // Free tier compatible model
+          model_id: 'eleven_monolingual_v1',
           voice_settings: {
             stability: 0.5,
-            similarity_boost: 0.75, // Slightly higher for clearer free tier voices
+            similarity_boost: 0.75,
           },
         }),
       });
-      console.log(response);
 
       if (response.ok) {
         const audioBlob = await response.blob();
@@ -273,11 +313,13 @@ function CompactTextToSpeech({ text }: { text: string }) {
         
         await audioRef.current.play();
       } else {
-        throw new Error(`ElevenLabs API responded with status: ${response.status}`);
+        const errorData = await response.text();
+        throw new Error(`ElevenLabs API error: ${response.status} - ${errorData}`);
       }
     } catch (error) {
       console.error('ElevenLabs TTS Error:', error);
-      alert('Failed to generate speech. Please check your ElevenLabs API key and try again.');
+      // Show user-friendly error message
+      message.error('Unable to generate audio. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -291,20 +333,34 @@ function CompactTextToSpeech({ text }: { text: string }) {
   return (
     <Tooltip title={isPlaying ? "Stop AI audio" : "Listen with ElevenLabs AI voice"}>
       <Button
-        size="small"
+        size="large"
         type="text"
         loading={isLoading}
         onClick={handleElevenLabsTTS}
         icon={isPlaying ? <AudioMutedOutlined /> : <AudioOutlined />}
-        style={{ color: isPlaying ? '#ff4d4f' : '#1c7ed6' }}
+        className="responsive-audio-btn"
+        style={{
+          color: isPlaying ? '#ff4d4f' : '#1c7ed6',
+          height: 'clamp(40px, 8vw, 48px)',
+          width: 'clamp(40px, 8vw, 48px)',
+          minWidth: 'clamp(40px, 8vw, 48px)',
+          fontSize: 'clamp(16px, 4vw, 20px)',
+          border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease'
+        }}
       />
     </Tooltip>
   );
 }
 
-// Theme Toggle Component
+// Responsive Theme Toggle Component
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   const handleToggle = () => {
     toggleTheme();
@@ -317,13 +373,26 @@ function ThemeToggle() {
         type="text"
         icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
         onClick={handleToggle}
-        size="small"
+        size="large"
+        className="responsive-theme-btn"
+        style={{
+          height: 'clamp(40px, 8vw, 48px)',
+          width: 'clamp(40px, 8vw, 48px)',
+          minWidth: 'clamp(40px, 8vw, 48px)',
+          fontSize: 'clamp(16px, 4vw, 20px)',
+          border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease'
+        }}
       />
     </Tooltip>
   );
 }
 
-// Reading Content Component with Reduced Spacing
+// Responsive Reading Content Component
 function ReadingContent({ content }: { content: unknown }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -349,39 +418,61 @@ function ReadingContent({ content }: { content: unknown }) {
     };
 
     return (
-      <Space direction="vertical" size="middle">
-        {/* Compact Header with Controls */}
-        <Card size="small" style={{
-          background: isDark ? '#1a1a1a' : '#fafafa',
-          borderColor: isDark ? '#404040' : '#d9d9d9'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Space direction="vertical" size="large" className="responsive-reading-content">
+        {/* Responsive Header with Controls */}
+        <Card 
+          className="reading-header-card"
+          style={{
+            background: isDark ? '#1a1a1a' : '#fafafa',
+            borderColor: isDark ? '#404040' : '#d9d9d9',
+            borderRadius: 'clamp(8px, 2vw, 12px)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+          }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'clamp(8px, 2vw, 12px)'
+          }}>
             <Space>
               <AntBadge
                 count={blogContent.readingTime}
-                style={{ backgroundColor: '#1c7ed6' }}
+                style={{
+                  backgroundColor: '#1c7ed6',
+                  fontSize: 'clamp(10px, 2vw, 12px)'
+                }}
               />
               <AntBadge
                 count="📖 Article"
-                style={{ backgroundColor: '#52c41a' }}
+                style={{
+                  backgroundColor: '#52c41a',
+                  fontSize: 'clamp(10px, 2vw, 12px)'
+                }}
               />
             </Space>
 
-            <Space>
+            <Space wrap style={{ gap: 'clamp(6px, 1.5vw, 10px)' }}>
               <CompactTextToSpeech text={blogContent.blogContent} />
-              <ThemeToggle />
             </Space>
           </div>
         </Card>
 
-        {/* Compact Summary */}
+        {/* Responsive Summary */}
         {blogContent.summary && (
           <Alert
             message="Summary"
             description={blogContent.summary}
             type="info"
             showIcon
-            style={{ padding: '12px' }}
+            className="reading-summary-alert"
+            style={{
+              padding: 'clamp(12px, 3vw, 20px)',
+              marginBottom: 'clamp(12px, 3vw, 20px)',
+              borderRadius: 'clamp(8px, 2vw, 12px)',
+              fontSize: 'clamp(15px, 3.5vw, 18px)',
+              lineHeight: 1.5
+            }}
           />
         )}
 
@@ -392,32 +483,34 @@ function ReadingContent({ content }: { content: unknown }) {
             className="content-text"
             style={{
               lineHeight: 1.6,
-              fontSize: '16px',
+              fontSize: 'clamp(14px, 3vw, 18px)',
               color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
               textAlign: 'justify',
               textJustify: 'inter-word',
               hyphens: 'auto',
-              wordSpacing: '0.1em'
+              wordSpacing: '0.1em',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
             }}
             dangerouslySetInnerHTML={{
               __html: blogContent.blogContent
-                .replace(/^# /gm, `<h1 style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 1rem 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
-                .replace(/\n# /g, `</h1>\n<h1 style="font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 1rem 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
-                .replace(/^## /gm, `<h2 style="font-size: 1.4rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
-                .replace(/\n## /g, `</h2>\n<h2 style="font-size: 1.4rem; font-weight: 600; margin: 1.25rem 0 0.75rem 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
-                .replace(/^### /gm, `<h3 style="font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
-                .replace(/\n### /g, `</h3>\n<h3 style="font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
+                .replace(/^# /gm, `<h1 style="font-size: clamp(1.25rem, 4vw, 1.75rem); font-weight: 700; margin: clamp(1rem, 3vw, 1.5rem) 0 clamp(0.75rem, 2vw, 1rem) 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
+                .replace(/\n# /g, `</h1>\n<h1 style="font-size: clamp(1.25rem, 4vw, 1.75rem); font-weight: 700; margin: clamp(1rem, 3vw, 1.5rem) 0 clamp(0.75rem, 2vw, 1rem) 0; color: ${isDark ? '#fff' : '#000'}; line-height: 1.3;">`)
+                .replace(/^## /gm, `<h2 style="font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 600; margin: clamp(0.875rem, 2.5vw, 1.25rem) 0 clamp(0.5rem, 1.5vw, 0.75rem) 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
+                .replace(/\n## /g, `</h2>\n<h2 style="font-size: clamp(1.1rem, 3vw, 1.4rem); font-weight: 600; margin: clamp(0.875rem, 2.5vw, 1.25rem) 0 clamp(0.5rem, 1.5vw, 0.75rem) 0; color: ${isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'}; line-height: 1.4;">`)
+                .replace(/^### /gm, `<h3 style="font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 600; margin: clamp(0.75rem, 2vw, 1rem) 0 clamp(0.375rem, 1vw, 0.5rem) 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
+                .replace(/\n### /g, `</h3>\n<h3 style="font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 600; margin: clamp(0.75rem, 2vw, 1rem) 0 clamp(0.375rem, 1vw, 0.5rem) 0; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.4;">`)
                 .replace(/\*\*(.*?)\*\*/g, `<strong style="font-weight: 600; color: ${isDark ? '#fff' : '#000'};">$1</strong>`)
                 .replace(/\*(.*?)\*/g, `<em style="font-style: italic; color: ${isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};">$1</em>`)
-                .replace(/^- /gm, `<li style="margin-bottom: 0.25rem; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
-                .replace(/\n- /g, `</li>\n<li style="margin-bottom: 0.25rem; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
-                .replace(/\n\n/g, `</p>\n<p style="margin-bottom: 1rem; font-size: 16px; line-height: 1.6; color: ${isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)'}; text-align: justify; text-justify: inter-word;">`)
-                .replace(/^(?!<)/gm, `<p style="margin-bottom: 1rem; font-size: 16px; line-height: 1.6; color: ${isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)'}; text-align: justify; text-justify: inter-word;">`)
+                .replace(/^- /gm, `<li style="margin-bottom: clamp(0.25rem, 1vw, 0.5rem); color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
+                .replace(/\n- /g, `</li>\n<li style="margin-bottom: clamp(0.25rem, 1vw, 0.5rem); color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
+                .replace(/\n\n/g, `</p>\n<p style="margin-bottom: clamp(0.75rem, 2vw, 1rem); font-size: clamp(14px, 3vw, 16px); line-height: 1.6; color: ${isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)'}; text-align: justify; text-justify: inter-word;">`)
+                .replace(/^(?!<)/gm, `<p style="margin-bottom: clamp(0.75rem, 2vw, 1rem); font-size: clamp(14px, 3vw, 16px); line-height: 1.6; color: ${isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)'}; text-align: justify; text-justify: inter-word;">`)
                 .replace(/(?<!>)$/gm, '</p>')
                 .replace(/<p[^>]*><\/p>/g, '')
                 .replace(/<p[^>]*><h/g, '<h')
                 .replace(/<\/h([1-6])><\/p>/g, '</h$1>')
-                .replace(/<p[^>]*><li>/g, `<ul style="margin-bottom: 1rem; margin-top: 0.25rem; padding-left: 1.5rem; list-style-type: disc;"><li style="margin-bottom: 0.25rem; color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
+                .replace(/<p[^>]*><li>/g, `<ul style="margin-bottom: clamp(0.75rem, 2vw, 1rem); margin-top: clamp(0.25rem, 1vw, 0.5rem); padding-left: clamp(1rem, 3vw, 1.5rem); list-style-type: disc;"><li style="margin-bottom: clamp(0.25rem, 1vw, 0.5rem); color: ${isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'}; line-height: 1.6;">`)
                 .replace(/<\/li><\/p>/g, '</li></ul>')
             }}
           />
@@ -475,16 +568,38 @@ function ReadingContent({ content }: { content: unknown }) {
   );
 }
 
-// Video Content Component
+// Responsive Video Content Component
 function VideoContent({ content }: { content: unknown }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   if (!content || typeof content !== 'object' || content === null) {
     return (
-      <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
-        <PlayCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
-        <Alert message="Video Not Available" description="Video content is being prepared. Please check back later." type="warning" showIcon />
+      <Space direction="vertical" size={['large', 'large']} className="responsive-video-placeholder" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'clamp(250px, 40vh, 350px)',
+        padding: 'clamp(20px, 5vw, 40px)',
+        textAlign: 'center'
+      }}>
+        <PlayCircleOutlined style={{
+          fontSize: 'clamp(64px, 18vw, 80px)',
+          color: '#ff4d4f',
+          marginBottom: 'clamp(12px, 3vw, 16px)'
+        }} />
+        <Alert
+          message="Video Not Available"
+          description="Video content is being prepared. Please check back later."
+          type="warning"
+          showIcon
+          style={{
+            maxWidth: 'clamp(320px, 85vw, 600px)',
+            fontSize: 'clamp(14px, 3.5vw, 16px)',
+            borderRadius: 'clamp(6px, 1.5vw, 8px)',
+            textAlign: 'left'
+          }}
+        />
       </Space>
     );
   }
@@ -501,25 +616,80 @@ function VideoContent({ content }: { content: unknown }) {
     };
 
     return (
-      <Space direction="vertical" size="large">
-        <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '20vh' }}>
-          <PlayCircleOutlined style={{ fontSize: '64px', color: '#ff4d4f' }} />
-          <Title level={3} style={{ textAlign: 'center' }}>{comingSoonContent.message}</Title>
+      <Space direction="vertical" size={['large', 'large']}>
+        <Space direction="vertical" size={['large', 'large']} className="responsive-video-coming-soon" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'clamp(180px, 25vh, 220px)',
+          padding: 'clamp(20px, 5vw, 40px)',
+          textAlign: 'center'
+        }}>
+          <PlayCircleOutlined style={{
+            fontSize: 'clamp(64px, 18vw, 80px)',
+            color: '#ff4d4f',
+            marginBottom: 'clamp(12px, 3vw, 16px)'
+          }} />
+          <Title
+            level={3}
+            style={{
+              textAlign: 'center',
+              fontSize: 'clamp(20px, 5.5vw, 28px)',
+              margin: 0,
+              fontWeight: 600,
+              lineHeight: 1.3
+            }}
+          >
+            {comingSoonContent.message}
+          </Title>
         </Space>
 
-        <Alert message="Video Coming Soon" description={
-          <Space direction="vertical" size="small">
-            <Text>{comingSoonContent.description}</Text>
-            <Space>
-              <AntBadge count={comingSoonContent.expectedDuration} style={{ backgroundColor: '#ff4d4f' }} />
+        <Alert
+          message="Video Coming Soon"
+          description={
+            <Space direction="vertical" size={['small', 'small']}>
+              <Text style={{ fontSize: 'clamp(15px, 3.5vw, 18px)', lineHeight: 1.4 }}>
+                {comingSoonContent.description}
+              </Text>
+              <Space wrap style={{ gap: 'clamp(6px, 1.5vw, 10px)', justifyContent: 'center' }}>
+                <AntBadge
+                  count={comingSoonContent.expectedDuration}
+                  style={{
+                    backgroundColor: '#ff4d4f',
+                    fontSize: 'clamp(11px, 2.5vw, 14px)'
+                  }}
+                />
+              </Space>
             </Space>
-          </Space>
-        } type="info" showIcon />
+          }
+          type="info"
+          showIcon
+          style={{
+            fontSize: 'clamp(14px, 3.5vw, 16px)',
+            borderRadius: 'clamp(8px, 2vw, 12px)',
+            maxWidth: 'clamp(320px, 85vw, 600px)',
+            margin: '0 auto'
+          }}
+        />
 
-        {/* Coming soon content with markdown support */}
-        <div>
-          <div 
-            style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
+        {/* Responsive coming soon content with markdown support */}
+        <div className="video-coming-soon-content" style={{
+          marginTop: 'clamp(20px, 5vw, 32px)',
+          padding: 'clamp(16px, 4vw, 24px)',
+          background: isDark ? 'rgba(26, 26, 26, 0.6)' : 'rgba(249, 250, 251, 0.7)',
+          borderRadius: 'clamp(8px, 2vw, 12px)',
+          border: isDark ? '1px solid #404040' : '1px solid #e5e7eb',
+          maxWidth: 'clamp(320px, 90vw, 800px)',
+          margin: '0 auto'
+        }}>
+          <div
+            style={{
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.6,
+              fontSize: 'clamp(15px, 3.5vw, 18px)',
+              color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
+              textAlign: 'justify'
+            }}
             dangerouslySetInnerHTML={{ 
               __html: comingSoonContent.comingSoonContent
                 .replace(/^# /gm, '<h1>')
@@ -588,7 +758,7 @@ function VideoContent({ content }: { content: unknown }) {
   );
 }
 
-// Quiz Content Component
+// Responsive Quiz Content Component
 function QuizContent({ content }: { content: unknown }) {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
@@ -667,36 +837,79 @@ function QuizContent({ content }: { content: unknown }) {
   const allQuestionsAnswered = normalizedQuestions.every((_: unknown, index: number) => selectedAnswers[index] !== undefined);
 
   return (
-    <Space direction="vertical" size="large">
-      {/* Quiz Header with Meta Information */}
-      <Card bordered bodyStyle={{ padding: '24px' }} style={{ background: isDark ? '#1a1a1a' : 'linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%)' }}>
-        <Space direction="vertical" size="small">
-      {quizContent.introduction && (
-            <Text style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#d9f7be' : '#52c41a' }}>
-          {quizContent.introduction}
+    <Space direction="vertical" size={['large', 'large']} className="responsive-quiz-content">
+      {/* Responsive Quiz Header with Meta Information */}
+      <Card
+        bordered
+        className="quiz-header-card"
+        
+        style={{
+          background: isDark ? '#1a1a1a' : 'linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%)',
+          borderRadius: 'clamp(8px, 2vw, 16px)',
+          marginBottom: 'clamp(20px, 5vw, 32px)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          padding: 'clamp(20px, 5vw, 32px)'
+        }}
+      >
+        <Space direction="vertical" size={['small', 'small']}>
+          {quizContent.introduction && (
+            <Text style={{
+              fontSize: 'clamp(16px, 4vw, 18px)',
+              fontWeight: 500,
+              color: isDark ? '#d9f7be' : '#52c41a'
+            }}>
+              {quizContent.introduction}
             </Text>
           )}
 
-          <Space>
-            <AntBadge count={`${quizContent.totalQuestions ?? normalizedQuestions.length} Questions`} style={{ backgroundColor: '#52c41a' }} />
+          <Space wrap style={{ 
+            gap: 'clamp(6px, 1.5vw, 12px)',
+            justifyContent: 'center'
+          }}>
+            <AntBadge
+              count={`${quizContent.totalQuestions ?? normalizedQuestions.length} Questions`}
+              style={{
+                backgroundColor: '#52c41a',
+                fontSize: 'clamp(11px, 2.5vw, 14px)'
+              }}
+            />
             {quizContent.estimatedTime && (
-              <AntBadge count={quizContent.estimatedTime} style={{ backgroundColor: '#1c7ed6' }} />
+              <AntBadge
+                count={quizContent.estimatedTime}
+                style={{
+                  backgroundColor: '#1c7ed6',
+                  fontSize: 'clamp(10px, 2vw, 12px)'
+                }}
+              />
             )}
             {quizContent.difficulty && (
-              <AntBadge count={quizContent.difficulty} style={{ backgroundColor: '#fa8c16' }} />
+              <AntBadge
+                count={quizContent.difficulty}
+                style={{
+                  backgroundColor: '#fa8c16',
+                  fontSize: 'clamp(10px, 2vw, 12px)'
+                }}
+              />
             )}
           </Space>
 
           {!showResults && (
-            <Space>
-              <Text style={{ fontSize: '14px', color: '#8c8c8c' }}>
+            <Space direction="vertical" size={['small', 'small']} style={{ width: '100%' }}>
+              <Text style={{
+                fontSize: 'clamp(14px, 3.5vw, 16px)',
+                color: isDark ? '#a6a6a6' : '#8c8c8c',
+                fontWeight: 500
+              }}>
                 Progress: {Object.keys(selectedAnswers).length} / {normalizedQuestions.length} answered
               </Text>
               <Progress
                 percent={(Object.keys(selectedAnswers).length / normalizedQuestions.length) * 100}
-                size="small"
+                strokeWidth={8}
                 strokeColor="#52c41a"
-                style={{ flex: 1, maxWidth: '200px' }}
+                style={{
+                  width: '100%',
+                  maxWidth: 'clamp(200px, 60vw, 300px)'
+                }}
               />
             </Space>
           )}
@@ -710,11 +923,15 @@ function QuizContent({ content }: { content: unknown }) {
               <Card
                 key={questionIndex}
                 bordered
-                bodyStyle={{ padding: '24px' }}
+                className="quiz-question-card"
+                bodyStyle={{ padding: 'clamp(20px, 5vw, 32px)' }}
                 style={{
                   background: isDark ? (selectedAnswers[questionIndex] ? '#262626' : '#1a1a1a') : (selectedAnswers[questionIndex] ? '#f6ffed' : '#fafafa'),
                   borderColor: selectedAnswers[questionIndex] ? '#b7eb8f' : (isDark ? '#404040' : '#d9d9d9'),
-                  transition: 'none'
+                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  transition: 'all 0.2s ease',
+                  padding: 'clamp(20px, 5vw, 32px)'
                 }}
               >
                 <Space direction="vertical" size="middle">
@@ -726,7 +943,13 @@ function QuizContent({ content }: { content: unknown }) {
                         color: selectedAnswers[questionIndex] ? 'white' : 'black'
                       }}
                     />
-                    <Text style={{ flex: 1, fontWeight: 500, fontSize: '18px', color: isDark ? 'white' : 'black' }}>
+                    <Text style={{ 
+                      flex: 1, 
+                      fontWeight: 500, 
+                      fontSize: 'clamp(16px, 4vw, 20px)', 
+                      color: isDark ? 'white' : 'black',
+                      lineHeight: 1.4
+                    }}>
                       {question.question}
                     </Text>
                   </Space>
@@ -735,23 +958,41 @@ function QuizContent({ content }: { content: unknown }) {
                     value={selectedAnswers[questionIndex] ?? ''}
                     onChange={(e) => handleAnswerSelect(questionIndex, String(e.target.value))}
                   >
-                    <Space direction="vertical" size="small" style={{ marginLeft: '16px' }}>
+                    <Space direction="vertical" size="middle" style={{ 
+                      marginLeft: 'clamp(12px, 3vw, 20px)',
+                      width: '100%'
+                    }}>
                       {question.options.map((option: string, optionIndex: number) => (
                         <Card
                           key={optionIndex}
-                          bodyStyle={{ padding: '12px' }}
+                          className="quiz-option-card"
+                          bodyStyle={{ padding: 'clamp(16px, 4vw, 20px)' }}
                           style={{
                             cursor: 'pointer',
                             background: isDark ? (selectedAnswers[questionIndex] === option ? '#262626' : '#1a1a1a') : (selectedAnswers[questionIndex] === option ? '#f0f9ff' : 'transparent'),
                             border: selectedAnswers[questionIndex] === option ? '2px solid #52c41a' : (isDark ? '1px solid #404040' : '1px solid #d9d9d9'),
-                            transition: 'none'
+                            borderRadius: 'clamp(6px, 1.5vw, 10px)',
+                            transition: 'all 0.2s ease',
+                            minHeight: 'clamp(48px, 10vw, 56px)',
+                            display: 'flex',
+                            alignItems: 'center'
                           }}
                           onClick={() => handleAnswerSelect(questionIndex, option)}
                         >
                           <Radio
                             value={option}
+                            style={{
+                              fontSize: 'clamp(14px, 3.5vw, 16px)',
+                              lineHeight: 1.4,
+                              width: '100%'
+                            }}
                           >
-                            {option}
+                            <span style={{
+                              fontSize: 'clamp(14px, 3.5vw, 16px)',
+                              lineHeight: 1.4
+                            }}>
+                              {option}
+                            </span>
                           </Radio>
                         </Card>
                       ))}
@@ -762,20 +1003,34 @@ function QuizContent({ content }: { content: unknown }) {
             ))}
           </Space>
 
-          <Space style={{ display: 'flex', justifyContent: 'center', marginTop: '48px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginTop: 'clamp(32px, 8vw, 48px)',
+            padding: '0 clamp(16px, 4vw, 24px)'
+          }}>
             <Button
               size="large"
               onClick={handleSubmitQuiz}
               disabled={!allQuestionsAnswered}
               icon={<TrophyOutlined />}
+              className="quiz-submit-btn"
               style={{
                 backgroundColor: allQuestionsAnswered ? '#52c41a' : undefined,
-                borderColor: allQuestionsAnswered ? '#52c41a' : undefined
+                borderColor: allQuestionsAnswered ? '#52c41a' : undefined,
+                height: 'clamp(48px, 10vw, 56px)',
+                fontSize: 'clamp(14px, 3.5vw, 16px)',
+                fontWeight: 600,
+                borderRadius: 'clamp(6px, 1.5vw, 8px)',
+                minWidth: 'clamp(200px, 50vw, 300px)',
+                maxWidth: '100%'
               }}
             >
-              {allQuestionsAnswered ? 'Submit Quiz & See Results!' : `Answer ${normalizedQuestions.length - Object.keys(selectedAnswers).length} more questions`}
+              <span style={{ textAlign: 'center', lineHeight: 1.2 }}>
+                {allQuestionsAnswered ? 'Submit Quiz & See Results!' : `Answer ${normalizedQuestions.length - Object.keys(selectedAnswers).length} more questions`}
+              </span>
             </Button>
-          </Space>
+          </div>
         </>
       ) : (
         <Space direction="vertical" size="large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -261,8 +261,10 @@ export default function Dashboard() {
               size="large"
               style={{
                 fontSize: 'clamp(12px, 2.5vw, 14px)',
-                height: 'clamp(36px, 8vw, 40px)',
-                padding: '0 clamp(12px, 3vw, 16px)'
+                height: 'clamp(36px, 8vw, 48px)',
+                padding: '0 clamp(12px, 3vw, 16px)',
+                minWidth: 'clamp(100px, 20vw, 140px)',
+                borderRadius: 'clamp(6px, 1.5vw, 8px)'
               }}
             >
               <span className="hide-text-mobile">Create New Course</span>
@@ -325,7 +327,10 @@ export default function Dashboard() {
               </Space>
             </Card>
           ) : (
-            <Row gutter={[16, 16]} style={{ width: '100%' }}>
+            <Row gutter={[
+              { xs: 8, sm: 12, md: 16, lg: 16, xl: 16 },
+              { xs: 12, sm: 16, md: 16, lg: 16, xl: 16 }
+            ]} style={{ width: '100%' }}>
               {filteredCourses?.map((course) => (
                 <Col key={course.id} xs={24} sm={12} md={8} lg={8} xl={6}>
                   <Card
@@ -333,9 +338,10 @@ export default function Dashboard() {
                       height: '100%',
                       background: isDark ? '#1a1a1a' : '#ffffff',
                       borderColor: isDark ? '#404040' : '#d9d9d9',
-                      transition: 'all 0.3s ease'
+                      transition: 'all 0.3s ease',
+                      borderRadius: 'clamp(8px, 2vw, 12px)',
+                      minHeight: 'clamp(280px, 40vw, 320px)'
                     }}
-                    hoverable
                   >
                     <Space direction="vertical" size="middle" style={{ width: '100%', height: '100%' }}>
                       <div style={{ flex: 1 }}>

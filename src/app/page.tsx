@@ -235,7 +235,6 @@ export default function Home() {
                         transition: 'all 250ms ease-in-out',
                         borderRadius: 'clamp(8px, 2vw, 12px)'
                       }}
-                      hoverable
                     >
                       <Space direction="vertical" size="large" style={{ textAlign: 'center', width: '100%' }}>
                         <div

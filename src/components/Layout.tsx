@@ -69,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
           position: 'relative',
           zIndex: 999,
           boxShadow: theme === 'dark' ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
-          height: '70px',
+          height: 'clamp(56px, 8vh, 70px)',
           flexShrink: 0,
           transition: 'all 0.3s ease'
         }}>
@@ -155,21 +155,24 @@ export function Layout({ children }: LayoutProps) {
           {/* Right Section - Search, Notifications, User */}
           <Space size="small" align="center" className="header-right-section">
             {/* Search Bar - Hidden on very small screens */}
-            <div className="search-bar-container">
-              <Input
-                placeholder="Search courses..."
-                prefix={<SearchOutlined style={{ color: theme === 'dark' ? '#8c8c8c' : '#bfbfbf' }} />}
-                style={{
-                  borderRadius: '20px',
-                  backgroundColor: theme === 'dark' ? '#262626' : '#f5f5f5',
-                  border: `1px solid ${theme === 'dark' ? '#434343' : '#d9d9d9'}`,
-                  height: '36px',
-                  width: '100%',
-                  minWidth: '200px',
-                  maxWidth: '300px'
-                }}
-              />
-            </div>
+            {session && (
+              <div className="search-bar-container">
+                <Input
+                  placeholder="Search courses..."
+                  prefix={<SearchOutlined style={{ color: theme === 'dark' ? '#8c8c8c' : '#bfbfbf' }} />}
+                  style={{
+                    borderRadius: '20px',
+                    backgroundColor: theme === 'dark' ? '#262626' : '#f5f5f5',
+                    border: `1px solid ${theme === 'dark' ? '#434343' : '#d9d9d9'}`,
+                    height: 'clamp(32px, 7vw, 36px)',
+                    width: '100%',
+                    minWidth: 'clamp(150px, 20vw, 200px)',
+                    maxWidth: 'clamp(250px, 25vw, 300px)',
+                    fontSize: 'clamp(13px, 3vw, 14px)'
+                  }}
+                />
+              </div>
+            )}
 
             {/* Action Buttons - Compact on mobile */}
             <Space size="small" className="action-buttons">
@@ -235,12 +238,22 @@ export function Layout({ children }: LayoutProps) {
                 placement="bottomRight"
                 arrow
               >
-                <Space style={{ cursor: 'pointer', padding: '8px', borderRadius: '8px', transition: 'all 0.2s' }}>
+                <Space style={{ 
+                  cursor: 'pointer', 
+                  padding: 'clamp(6px, 1.5vw, 8px)', 
+                  borderRadius: 'clamp(6px, 1.5vw, 8px)', 
+                  transition: 'all 0.2s' 
+                }}>
                   <Avatar
                     src={session.user?.image}
                     alt={session.user?.name ?? 'User'}
-                    size="small"
-                    style={{ border: `2px solid ${theme === 'dark' ? '#4dabf7' : '#40a9ff'}` }}
+                    size={window?.innerWidth <= 576 ? 'small' : 'default'}
+                    style={{ 
+                      border: `2px solid ${theme === 'dark' ? '#4dabf7' : '#40a9ff'}`,
+                      width: 'clamp(24px, 6vw, 32px)',
+                      height: 'clamp(24px, 6vw, 32px)',
+                      fontSize: 'clamp(12px, 3vw, 14px)'
+                    }}
                   >
                     {session.user?.name?.charAt(0).toUpperCase()}
                   </Avatar>
@@ -251,7 +264,8 @@ export function Layout({ children }: LayoutProps) {
                       maxWidth: 'clamp(60px, 15vw, 120px)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      fontSize: 'clamp(12px, 3vw, 14px)'
                     }}
                     className="user-name-text"
                   >
@@ -403,9 +417,8 @@ export function Layout({ children }: LayoutProps) {
           className="scrollable-content"
           style={{
             backgroundColor: 'var(--main-bg)',
-            height: 'calc(100vh - 70px)',
-            maxHeight: 'calc(100vh - 70px)',
-            padding: 'clamp(8px, 4vw, 16px)',
+            height: 'calc(100vh - clamp(56px, 8vh, 70px))',
+            maxHeight: 'calc(100vh - clamp(56px, 8vh, 70px))',
             overflowY: 'scroll',
             overflowX: 'hidden',
             flex: 1,
