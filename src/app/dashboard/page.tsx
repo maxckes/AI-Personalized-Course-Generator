@@ -22,7 +22,7 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
@@ -31,12 +31,7 @@ import { api } from "~/trpc/react";
 import { Layout as AppLayout } from "~/components/Layout";
 
 export default function Dashboard() {
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [isDark] = useState(false);
 
   const [opened, setOpened] = useState(false);
   const [limitModalOpened, setLimitModalOpened] = useState(false);
@@ -230,9 +225,26 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <Content style={{ padding: '24px', maxWidth: '100%', margin: '0 auto' }}>
+      <Content 
+        className="scrollable-content"
+        style={{ 
+          padding: 'clamp(12px, 4vw, 24px)', 
+          maxWidth: '100%', 
+          margin: '0 auto',
+          width: '100%',
+          height: '100%',
+          maxHeight: '100%',
+          overflowY: 'scroll',
+          overflowX: 'hidden'
+        }}>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
             <div>
               <Title level={1} style={{ color: isDark ? 'white' : 'black', margin: 0 }}>My Courses</Title>
               <Text style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
@@ -245,8 +257,14 @@ export default function Dashboard() {
               onClick={() => setOpened(true)}
               disabled={activeCourseCount >= 2}
               size="large"
+              style={{
+                fontSize: 'clamp(12px, 2.5vw, 14px)',
+                height: 'clamp(36px, 8vw, 40px)',
+                padding: '0 clamp(12px, 3vw, 16px)'
+              }}
             >
-              Create New Course
+              <span className="hide-text-mobile">Create New Course</span>
+              <span className="show-text-mobile" style={{ display: 'none' }}>Create</span>
             </Button>
           </div>
 
@@ -305,9 +323,9 @@ export default function Dashboard() {
               </Space>
             </Card>
           ) : (
-            <Row gutter={[24, 24]}>
+            <Row gutter={[16, 16]} style={{ width: '100%' }}>
               {filteredCourses?.map((course) => (
-                <Col key={course.id} xs={24} sm={12} lg={8}>
+                <Col key={course.id} xs={24} sm={12} md={8} lg={8} xl={6}>
                   <Card
                     style={{
                       height: '100%',

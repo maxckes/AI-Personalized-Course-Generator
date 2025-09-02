@@ -6,7 +6,6 @@ import {
   Layout,
   Typography,
   Spin,
-  Space,
   Badge as AntBadge,
   Collapse,
   Button,
@@ -14,9 +13,6 @@ import {
   Card,
   Alert,
   Breadcrumb,
-  Avatar,
-  Dropdown,
-  Tooltip,
   message
 } from 'antd';
 import {
@@ -28,19 +24,17 @@ import {
   ArrowLeftOutlined,
   ClockCircleOutlined,
   TrophyOutlined,
-  UserOutlined,
-  LogoutOutlined,
-  ExperimentOutlined
+  MenuUnfoldOutlined,
+  MenuFoldOutlined
 } from '@ant-design/icons';
-import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;
-const { Header, Sider, Content } = Layout;
-const { Panel } = Collapse;
+const { Sider, Content } = Layout;
 
 import { api } from "~/trpc/react";
 import { ContentRenderer } from "~/components/ContentRenderer";
+import { Layout as AppLayout } from "~/components/Layout";
 
 // Define proper TypeScript interfaces for the data structure
 interface UserProgress {
@@ -77,8 +71,7 @@ export default function CoursePage() {
   const params = useParams();
   const courseId = params?.courseId as string;
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
-  const { data: session } = useSession();
-  const [isDark] = useState(false); // For now, keeping it simple
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Add state
   const [pendingModules, setPendingModules] = useState<string[]>([]);
@@ -132,7 +125,7 @@ export default function CoursePage() {
   const completedModules = typedCourse?.weeks
     .flatMap(week => week.modules)
     .filter(module => module.progress[0]?.isCompleted).length ?? 0;
-  const progressPercentage = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+  const progressPercentage = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
 
   // Auto-select first module if none selected
   React.useEffect(() => {
@@ -140,6 +133,21 @@ export default function CoursePage() {
       setSelectedModuleId(typedCourse.weeks[0].modules[0].id);
     }
   }, [typedCourse, selectedModuleId]);
+
+  // Auto-collapse sidebar on mobile
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setSidebarCollapsed(true);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (isLoading) {
     return (
@@ -201,97 +209,71 @@ export default function CoursePage() {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <Header style={{
-        background: isDark ? '#1a1a1a' : '#ffffff',
-        borderBottom: isDark ? '1px solid #404040' : '1px solid #d9d9d9',
-        padding: '0 24px',
+    <AppLayout>
+      <Layout style={{ 
+        height: '100%', 
+        maxHeight: '100%',
+        overflow: 'hidden',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <Space>
-          <BookOutlined style={{ fontSize: '28px', color: isDark ? '#5c7cfa' : '#1c7ed6' }} />
-          <Title level={3} style={{ color: isDark ? '#5c7cfa' : '#1c7ed6', margin: 0 }}>Course.AI</Title>
-        </Space>
-
-        {session && (
-          <Space>
-            <Tooltip title="API Test Lab">
-              <Button
-                type="text"
-                icon={<ExperimentOutlined />}
-                onClick={() => window.location.href = '/test-api'}
-              />
-            </Tooltip>
-
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: 'profile',
-                    icon: <UserOutlined />,
-                    label: 'Profile',
-                  },
-                  {
-                    type: 'divider',
-                  },
-                  {
-                    key: 'logout',
-                    icon: <LogoutOutlined />,
-                    label: 'Sign out',
-                    onClick: () => {
-                      message.success('Signed out successfully');
-                      void signOut();
-                    },
-                  },
-                ],
-              }}
-              trigger={['click']}
-            >
-              <Space style={{ cursor: 'pointer' }}>
-                <Avatar
-                  src={session.user?.image}
-                  alt={session.user?.name ?? 'User'}
-                  size="small"
-                />
-                <Text style={{ color: isDark ? 'white' : 'black' }}>{session.user?.name}</Text>
-              </Space>
-            </Dropdown>
-          </Space>
-        )}
-      </Header>
-
-      {/* Left Sidebar - Course Navigation */}
-      <Sider
-        width={350}
-        style={{
-          background: isDark ? '#1a1a1a' : '#fafafa',
-          borderRight: isDark ? '1px solid #404040' : '1px solid #d9d9d9'
-        }}
-        breakpoint="md"
-        collapsedWidth={0}
-      >
-        <div style={{ padding: '16px', height: 'calc(100vh - 70px)', overflow: 'auto' }}>
-          <Space direction="vertical" size="middle">
+        flexDirection: 'row'
+      }} className="course-page-sidebar">
+        {/* Left Sidebar - Course Navigation */}
+        <Sider
+          width={350}
+          style={{
+            background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+            borderRight: '1px solid #e5e7eb',
+            width: sidebarCollapsed ? "0px" : "350px",
+            maxWidth: sidebarCollapsed ? "0px" : "350px",
+            minWidth: sidebarCollapsed ? "0px" : "350px",
+            overflowX: "hidden",
+            height: '100%',
+            maxHeight: '100%',
+            flexShrink: 0,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '2px 0 8px rgba(0, 0, 0, 0.05)'
+          }}
+          breakpoint="lg"
+          collapsedWidth={0}
+          collapsed={sidebarCollapsed}
+          collapsible
+          theme="light"
+          trigger={null}
+        >
+          <div 
+            className="scrollable-content"
+            style={{
+              height: '100%',
+              maxHeight: '100%',
+              overflowY: 'scroll',
+              overflowX: 'hidden',
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '0'
+            }}>
+          <div style={{ padding: '20px 16px' }}>
             {/* Course Header */}
-            <Space direction="vertical" size="small">
+            <div style={{ marginBottom: '24px' }}>
               <Breadcrumb
                 items={[
                   {
-                    title: <Link href="/dashboard" style={{ color: isDark ? '#5c7cfa' : '#1c7ed6' }}>Courses</Link>
+                    title: <Link href="/dashboard" style={{ color: '#1c7ed6', fontSize: '12px' }}>Courses</Link>
                   },
                   {
-                    title: <Text style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>{typedCourse.title}</Text>
+                    title: <Text style={{ color: '#6b7280', fontSize: '12px' }}>{typedCourse.title}</Text>
                   }
                 ]}
+                style={{ marginBottom: '12px' }}
               />
 
               <Title level={4} style={{
-                color: isDark ? 'white' : 'black',
-                lineHeight: 1.2,
-                margin: 0
+                color: '#111827',
+                lineHeight: 1.3,
+                margin: '0 0 8px 0',
+                fontSize: '18px',
+                fontWeight: 700,
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word'
               }}>
                 {typedCourse.title}
               </Title>
@@ -299,152 +281,308 @@ export default function CoursePage() {
               {typedCourse.description && (
                 <Text style={{
                   fontSize: '14px',
-                  color: isDark ? '#9ca3af' : '#6b7280',
-                  lineHeight: 1.4
+                  color: '#6b7280',
+                  lineHeight: 1.5,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  display: 'block'
                 }}>
                   {typedCourse.description}
                 </Text>
               )}
-            </Space>
+            </div>
 
             {/* Progress Overview */}
             <Card
-              size="small"
               style={{
-                background: isDark ? '#2a2a2a' : '#ffffff',
-                borderColor: isDark ? '#404040' : '#d9d9d9'
+                background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                border: '1px solid #e5e7eb',
+                borderRadius: '12px',
+                marginBottom: '24px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                padding: '8px'
               }}
             >
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ fontWeight: 500, color: isDark ? 'white' : 'black' }}>Course Progress</Text>
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <Text style={{ fontWeight: 600, color: '#111827', fontSize: '15px' }}>Course Progress</Text>
                   <AntBadge
                     count={
-                      <Space>
-                        {progressPercentage === 100 ? <TrophyOutlined /> : <ClockCircleOutlined />}
-                        {Math.round(progressPercentage)}%
-                      </Space>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {progressPercentage === 100 ? <TrophyOutlined style={{ fontSize: '12px' }} /> : <ClockCircleOutlined style={{ fontSize: '12px' }} />}
+                        <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                          {progressPercentage}%
+                        </span>
+                      </div>
                     }
                     style={{
-                      backgroundColor: progressPercentage === 100 ? '#52c41a' : '#1c7ed6'
+                      backgroundColor: progressPercentage === 100 ? '#10b981' : '#3b82f6',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      color: 'white'
                     }}
                   />
                 </div>
-                <Progress percent={progressPercentage} size="small" />
-                <Text style={{ fontSize: '12px', color: isDark ? '#9ca3af' : '#6b7280' }}>
-                  {completedModules} of {totalModules} modules completed
-                </Text>
-              </Space>
+                <Progress
+                  percent={progressPercentage}
+                  strokeColor={progressPercentage === 100 ? '#10b981' : '#3b82f6'}
+                  trailColor="#e5e7eb"
+                  strokeWidth={8}
+                  showInfo={false}
+                />
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '8px'
+                }}>
+                  <Text style={{ fontSize: '12px', color: '#6b7280' }}>
+                    {completedModules} of {totalModules} modules completed
+                  </Text>
+                  <Text style={{
+                    fontSize: '12px',
+                    color: progressPercentage === 100 ? '#10b981' : '#6b7280',
+                    fontWeight: 500
+                  }}>
+                    {progressPercentage === 100 ? '🎉 Complete!' : `${totalModules - completedModules} remaining`}
+                  </Text>
+                </div>
+              </div>
             </Card>
-
+                  <br></br>
             {/* Week/Module Navigation */}
-            <Collapse
-              defaultActiveKey={typedCourse.weeks[0]?.id ? [typedCourse.weeks[0].id] : []}
-              bordered={false}
-              style={{ background: 'transparent' }}
-            >
-              {typedCourse.weeks.map((week: WeekData) => (
-                <Panel
-                  key={week.id}
-                  header={
-                    <Space direction="vertical" size={0}>
-                      <Text style={{ color: isDark ? 'white' : 'black', fontWeight: 500 }}>
-                        Week {week.weekNumber}: {week.title}
-                      </Text>
-                      <Text style={{ fontSize: '12px', color: isDark ? '#9ca3af' : '#6b7280' }}>
-                        {week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length} / {week.modules.length} completed
-                      </Text>
-                    </Space>
-                  }
-                  style={{
-                    border: isDark ? '1px solid #404040' : '1px solid #d9d9d9',
-                    marginBottom: '8px',
-                    background: isDark ? '#2a2a2a' : '#ffffff'
-                  }}
-                >
-                  <Space direction="vertical" size="small">
+            <div style={{ }}>
+              <Collapse
+                bordered={false}
+                style={{
+                  background: 'transparent'
+                }}
+                items={typedCourse.weeks.map((week: WeekData) => ({
+                  key: week.id,
+                  label: (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      width: '100%',
+                      padding: '4px 0'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <Text style={{
+                          color: '#111827',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                          lineHeight: 1.4,
+                          display: 'block',
+                          marginBottom: '6px'
+                        }}>
+                          Week {week.weekNumber}: {week.title}
+                        </Text>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Progress
+                            percent={week.modules.length > 0 ? (week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length / week.modules.length) * 100 : 0}
+                            size="small"
+                            strokeColor="#3b82f6"
+                            trailColor="#e5e7eb"
+                            style={{ flex: 1, maxWidth: '120px' }}
+                            showInfo={false}
+                          />
+                          <Text style={{
+                            fontSize: '11px',
+                            color: '#6b7280',
+                            fontWeight: 500,
+                            minWidth: '40px',
+                            display:"flex",
+                            alignItems:"center",
+                            justifyContent:"center"
+                          }}>
+                            {week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length}/{week.modules.length}
+                          </Text>
+                        </div>
+                      </div>
+                      <AntBadge
+                        count={
+                          week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ? 
+                            <CheckCircleOutlined style={{ fontSize: '12px', color: 'white' }} /> : 
+                            `${week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length}/${week.modules.length}`
+                        }
+                        style={{
+                          backgroundColor: week.modules.filter((m: ModuleData) => m.progress[0]?.isCompleted).length === week.modules.length ? '#10b981' : '#3b82f6',
+                          fontSize: '10px',
+                          borderRadius: '6px',
+                          marginLeft: '12px',
+                          padding: '4px 8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      />
+                    </div>
+                  ),
+                children: (
+                  <div style={{ padding: '12px 0' }}>
                     {week.modules.map((module: ModuleData) => {
                       const isCompleted = module.progress[0]?.isCompleted ?? false;
                       const isSelected = selectedModuleId === module.id;
 
-                      return (
-                        <Card
-                          key={module.id}
+                                              return (
+                          <div key={module.id} style={{ marginBottom: '8px' }}>
+                          <Card
                           size="small"
                           style={{
                             cursor: 'pointer',
                             background: isSelected
-                              ? (isDark ? '#1a1a1a' : '#e6f7ff')
-                              : (isDark ? '#2a2a2a' : '#ffffff'),
+                              ? 'linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)'
+                              : isCompleted
+                                ? 'linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%)'
+                                : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                             borderColor: isSelected
-                              ? (isDark ? '#5c7cfa' : '#1c7ed6')
-                              : (isDark ? '#404040' : '#d9d9d9'),
+                              ? '#3b82f6'
+                              : isCompleted
+                                ? '#10b981'
+                                : '#e5e7eb',
+                            marginBottom: '8px',
+                            borderRadius: '8px',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            borderWidth: isSelected ? '2px' : '1px',
+                            boxShadow: isSelected 
+                              ? '0 4px 12px rgba(59, 130, 246, 0.15)' 
+                              : '0 2px 4px rgba(0, 0, 0, 0.04)'
                           }}
                           onClick={() => setSelectedModuleId(module.id)}
                           hoverable
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Space style={{ flex: 1, minWidth: 0 }}>
-                              {getModuleIcon(module.contentType)}
-                              <Space direction="vertical" size={0} style={{ flex: 1, minWidth: 0 }}>
-                                <Text
-                                  style={{
-                                    fontWeight: isSelected ? 500 : 400,
-                                    color: isDark
-                                      ? (isSelected ? '#5c7cfa' : '#d1d5db')
-                                      : (isSelected ? '#1c7ed6' : 'black'),
-                                    lineHeight: 1.2
-                                  }}
-                                  ellipsis
-                                >
-                                  {module.title}
-                                </Text>
-                                <AntBadge
-                                  count={module.contentType.toLowerCase()}
-                                  style={{
-                                    backgroundColor: getContentTypeColor(module.contentType) === 'blue' ? '#1c7ed6' :
-                                                   getContentTypeColor(module.contentType) === 'red' ? '#ff4d4f' :
-                                                   getContentTypeColor(module.contentType) === 'green' ? '#52c41a' : '#6b7280'
-                                  }}
-                                />
-                              </Space>
-                            </Space>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {/* Title Section */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                              <div style={{ fontSize: '16px',  marginTop: '2px',color: getContentTypeColor(module.contentType) === 'blue' ? '#3b82f6' :
+                                                 getContentTypeColor(module.contentType) === 'red' ? '#ef4444' :
+                                                 getContentTypeColor(module.contentType) === 'green' ? '#10b981' : '#6b7280',borderRadius: '50%',padding: '0px 4px' }}>
+                                {getModuleIcon(module.contentType)} 
+                              </div>
+                              <Text
+                                style={{
+                                  fontWeight: isSelected ? 600 : 500,
+                                  color: isSelected ? '#1e40af' : '#111827',
+                                  lineHeight: 1.4,
+                                  fontSize: '13px',
+                                  flex: 1,
+                                  wordBreak: 'break-word',
+                                  overflowWrap: 'break-word',
+                                  whiteSpace: 'normal'
+                                }}
+                              >
+                                {module.title}
+                              </Text>
+                            </div>
 
-                            <Button
-                              size="small"
-                              type={isCompleted ? "primary" : "default"}
-                              danger={!isCompleted}
-                              icon={isCompleted ? <CheckCircleOutlined /> : undefined}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleProgressToggle(module.id, isCompleted);
-                              }}
-                              loading={pendingModules.includes(module.id)}
-                              style={{ flexShrink: 0 }}
-                            >
-                              {isCompleted ? "Done" : "Mark Complete"}
-                            </Button>
+                            {/* Badge and Button Section */}
+                            <div style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between',
+                              gap: '8px'
+                            }}>
+                              <Button
+                                size="small"
+                                type={isCompleted ? "primary" : "default"}
+                                danger={!isCompleted}
+                                icon={isCompleted ? <CheckCircleOutlined /> : <ClockCircleOutlined />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleProgressToggle(module.id, isCompleted);
+                                }}
+                                loading={pendingModules.includes(module.id)}
+                                style={{
+                                  fontSize: '11px',
+                                  height: '24px',
+                                  flex: 1,
+                                  minWidth: '90px',
+                                  fontWeight: 500,
+                                  backgroundColor: isCompleted ? '#10b981' : undefined,
+                                  borderColor: isCompleted ? '#10b981' : undefined
+                                }}
+                              >
+                                {isCompleted ? "Done" : "Mark Complete"}
+                              </Button>
+                            </div>
                           </div>
-                        </Card>
-                      );
+                                                  </Card>
+                          </div>
+                        );
                     })}
-                  </Space>
-                </Panel>
-              ))}
-            </Collapse>
-          </Space>
+                  </div>
+                ),
+                style: {
+                  border: 'none',
+                  marginBottom: '8px',
+                  background: 'transparent',
+                  borderRadius: '8px'
+                }
+              }))}
+              defaultActiveKey={typedCourse.weeks[0]?.id ? [typedCourse.weeks[0].id] : []}
+            />
+            </div>
+          </div>
         </div>
       </Sider>
 
-      {/* Main Content Area */}
-      <Layout>
-        <Content style={{
-          background: isDark ? '#141414' : '#fafafa',
-          minHeight: 'calc(100vh - 70px)',
-          padding: '24px',
-          overflow: 'auto'
+        {/* Main Content Area */}
+        <Layout className="layout-container" style={{
+          flex: 1,
+          overflow: 'hidden',
+          width: sidebarCollapsed ? '100%' : 'calc(100% - 350px)',
+          minWidth: 0,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Sidebar Toggle Button */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: sidebarCollapsed ? '20px' : '370px',
+            zIndex: 1000,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
+            <Button
+              type="text"
+              icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                backdropFilter: 'blur(12px)',
+                padding: '8px',
+                width: '44px',
+                height: '44px'
+              }}
+              size="large"
+            />
+          </div>
+
+          <Content
+            className="scrollable-content"
+            style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+              height: '100%',
+              maxHeight: '100%',
+              padding: '0',
+              overflowY: 'scroll',
+              overflowX: 'hidden',
+              width: '100%',
+              maxWidth: '100%'
+            }}>
+          <div style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            width: '100%',
+            padding: '80px clamp(20px, 4vw, 40px) 40px clamp(20px, 4vw, 40px)',
+            boxSizing: 'border-box',
+            minHeight: '100%'
+          }}>
             {selectedModule ? (
               <ContentRenderer
                 module={selectedModule}
@@ -452,26 +590,76 @@ export default function CoursePage() {
                 isCompleted={selectedModule.progress[0]?.isCompleted ?? false}
               />
             ) : (
-              <div style={{
+              <div className="empty-state-container" style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '50vh',
-                textAlign: 'center'
+                minHeight: '60vh',
+                textAlign: 'center',
+                padding: '64px 48px',
+                margin: '0 auto',
+                maxWidth: '600px',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                borderRadius: '20px',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.06)'
               }}>
-                <BookOutlined style={{ fontSize: '64px', color: isDark ? '#6b7280' : '#9ca3af' }} />
-                <Title level={3} style={{ color: isDark ? '#d1d5db' : '#6b7280', margin: '16px 0' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)',
+                  borderRadius: '50%',
+                  padding: '32px',
+                  marginBottom: '32px',
+                  boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
+                }}>
+                  <BookOutlined style={{
+                    fontSize: '56px',
+                    color: '#3b82f6',
+                    opacity: 0.9
+                  }} />
+                </div>
+                <Title level={2} style={{
+                  color: '#111827',
+                  margin: '0 0 16px 0',
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  lineHeight: 1.2
+                }}>
                   Select a Module to Begin
                 </Title>
-                <Text style={{ color: isDark ? '#9ca3af' : '#6b7280', maxWidth: '400px' }}>
+                <Text style={{
+                  color: '#6b7280',
+                  maxWidth: '500px',
+                  lineHeight: 1.7,
+                  fontSize: '16px',
+                  marginBottom: '32px'
+                }}>
                   Choose a module from the sidebar to start learning. Your progress will be automatically saved as you complete each section.
                 </Text>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '16px 24px',
+                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #bfdbfe'
+                }}>
+                  <span style={{ fontSize: '20px' }}>👈</span>
+                  <Text style={{
+                    color: '#1e40af',
+                    fontSize: '14px',
+                    fontWeight: 600
+                  }}>
+                    Click on any module in the sidebar to get started
+                  </Text>
+                </div>
               </div>
             )}
           </div>
-        </Content>
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+    </AppLayout>
   );
 }

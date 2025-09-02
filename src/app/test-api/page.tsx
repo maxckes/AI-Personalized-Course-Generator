@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import { api } from "~/trpc/react";
 import { AuthShowcase } from "../_components/AuthShowcase";
+import { Layout as AppLayout } from "~/components/Layout";
 
 export default function ApiTestPage() {
   const [title, setTitle] = useState("My Test Course");
@@ -96,7 +97,17 @@ export default function ApiTestPage() {
   const { Title, Text } = Typography;
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <AppLayout>
+      <div style={{ 
+        padding: 'clamp(12px, 4vw, 24px)', 
+        maxWidth: '1200px', 
+        margin: '0 auto',
+        width: '100%',
+        height: '100%',
+        maxHeight: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      }}>
       <AuthShowcase />
 
       <Space direction="vertical" size="large" style={{ marginTop: '24px' }}>
@@ -236,6 +247,7 @@ export default function ApiTestPage() {
           </Space>
         </Card>
       </Space>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

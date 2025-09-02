@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Layout as AntLayout, Button, Avatar, Dropdown, Typography, Tooltip, Space, message, Input } from 'antd';
+import { Layout as AntLayout, Button, Avatar, Dropdown, Typography, Tooltip, Space, message, Input, Drawer } from 'antd';
 import {
   UserOutlined,
   LogoutOutlined,
@@ -13,7 +13,8 @@ import {
   SettingOutlined,
   HomeOutlined,
   BarChartOutlined,
-  UserSwitchOutlined
+  UserSwitchOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
@@ -30,6 +31,7 @@ export function Layout({ children }: LayoutProps) {
   const { data: session } = useSession();
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Only show API testing for this specific user ID
   const isDeveloper = session?.user?.id === "cmdpwnf560000rvneb18d34ks";
@@ -49,33 +51,58 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <AntLayout style={{ minHeight: '100vh' }}>
+    <AntLayout style={{ 
+      height: '100vh', 
+      maxHeight: '100vh',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
         <Header style={{
           backgroundColor: isDark ? '#1f1f1f' : '#fff',
           borderBottom: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
-          padding: '0 24px',
+          padding: '0 16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
+          position: 'relative',
           zIndex: 999,
           boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
-          height: '70px'
+          height: '70px',
+          flexShrink: 0
         }}>
           {/* Left Section - Logo and Navigation */}
-          <Space size="large" align="center">
-            {/* Logo and Title Separated */}
+          <Space align="center">
+            {/* Mobile Menu Button */}
+            {session && (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setMobileMenuOpen(true)}
+                style={{ 
+                  borderRadius: '8px',
+                  display: 'none' // Hidden by default, shown via CSS media query
+                }}
+                className="mobile-menu-button"
+              />
+            )}
+
+            {/* Logo and Title */}
             <Space align="center" size="small">
               <BookOutlined style={{ fontSize: '28px', color: '#1890ff' }} />
-              <Title level={3} style={{ margin: 0, color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
+              <Title level={3} style={{ 
+                margin: 0, 
+                color: isDark ? '#fff' : '#000', 
+                fontWeight: 600,
+                fontSize: 'clamp(18px, 5vw, 24px)' // Responsive font size
+              }}>
                 Course.AI
               </Title>
             </Space>
 
-            {/* Navigation Menu */}
+            {/* Desktop Navigation Menu */}
             {session && (
-              <Space size="small">
+              <Space size="small" className="desktop-navigation">
                 <Button
                   type="text"
                   icon={<HomeOutlined />}
@@ -113,9 +140,9 @@ export function Layout({ children }: LayoutProps) {
           </Space>
 
           {/* Right Section - Search, Notifications, User */}
-          <Space size="middle" align="center">
-            {/* Search Bar */}
-            <div style={{ width: '250px' }}>
+          <Space size="small" align="center" className="header-right-section">
+            {/* Search Bar - Hidden on very small screens */}
+            <div className="search-bar-container">
               <Input
                 placeholder="Search courses..."
                 prefix={<SearchOutlined style={{ color: isDark ? '#8c8c8c' : '#bfbfbf' }} />}
@@ -123,41 +150,49 @@ export function Layout({ children }: LayoutProps) {
                   borderRadius: '20px',
                   backgroundColor: isDark ? '#262626' : '#f5f5f5',
                   border: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`,
-                  height: '36px'
+                  height: '36px',
+                  width: '100%',
+                  minWidth: '200px',
+                  maxWidth: '300px'
                 }}
               />
             </div>
 
-            {/* Theme Toggle */}
-            <Tooltip title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Switch to dark mode"}>
-              <Button
-                type="text"
-                icon={mounted ? (isDark ? <SunOutlined /> : <MoonOutlined />) : <MoonOutlined />}
-                onClick={toggleTheme}
-                size="large"
-                style={{ borderRadius: '8px' }}
-              />
-            </Tooltip>
+            {/* Action Buttons - Compact on mobile */}
+            <Space size="small" className="action-buttons">
+              {/* Theme Toggle */}
+              <Tooltip title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Switch to dark mode"}>
+                <Button
+                  type="text"
+                  icon={mounted ? (isDark ? <SunOutlined /> : <MoonOutlined />) : <MoonOutlined />}
+                  onClick={toggleTheme}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
+                />
+              </Tooltip>
 
-            {/* Notifications */}
-            <Tooltip title="Notifications">
-              <Button
-                type="text"
-                icon={<BellOutlined />}
-                size="large"
-                style={{ borderRadius: '8px' }}
-              />
-            </Tooltip>
+              {/* Notifications - Hidden on small screens */}
+              <Tooltip title="Notifications">
+                <Button
+                  type="text"
+                  icon={<BellOutlined />}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
+                  className="hide-on-small"
+                />
+              </Tooltip>
 
-            {/* Settings */}
-            <Tooltip title="Settings">
-              <Button
-                type="text"
-                icon={<SettingOutlined />}
-                size="large"
-                style={{ borderRadius: '8px' }}
-              />
-            </Tooltip>
+              {/* Settings - Hidden on small screens */}
+              <Tooltip title="Settings">
+                <Button
+                  type="text"
+                  icon={<SettingOutlined />}
+                  size="large"
+                  style={{ borderRadius: '8px' }}
+                  className="hide-on-small"
+                />
+              </Tooltip>
+            </Space>
 
             {session && (
               <Dropdown
@@ -200,11 +235,12 @@ export function Layout({ children }: LayoutProps) {
                     strong
                     style={{
                       color: isDark ? '#fff' : '#000',
-                      maxWidth: '120px',
+                      maxWidth: 'clamp(60px, 15vw, 120px)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap'
                     }}
+                    className="user-name-text"
                   >
                     {session.user?.name}
                   </Text>
@@ -214,12 +250,132 @@ export function Layout({ children }: LayoutProps) {
           </Space>
         </Header>
 
-        <Content style={{
-          backgroundColor: isDark ? '#000' : '#fafafa',
-          minHeight: 'calc(100vh - 64px)',
-          padding: '24px',
-          overflow: 'auto'
-        }}>
+        {/* Mobile Navigation Drawer */}
+        <Drawer
+          title={
+            <Space align="center">
+              <BookOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
+              <Text style={{ color: isDark ? '#fff' : '#000', fontWeight: 600 }}>
+                Course.AI
+              </Text>
+            </Space>
+          }
+          placement="left"
+          onClose={() => setMobileMenuOpen(false)}
+          open={mobileMenuOpen}
+          width={280}
+          bodyStyle={{ 
+            backgroundColor: isDark ? '#1f1f1f' : '#fff',
+            padding: '16px'
+          }}
+          headerStyle={{
+            backgroundColor: isDark ? '#1f1f1f' : '#fff',
+            borderBottom: `1px solid ${isDark ? '#434343' : '#d9d9d9'}`
+          }}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            {/* Mobile Navigation Menu */}
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Button
+                type="text"
+                icon={<HomeOutlined />}
+                size="large"
+                block
+                style={{ 
+                  textAlign: 'left',
+                  borderRadius: '8px',
+                  height: '48px'
+                }}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.location.href = '/dashboard';
+                }}
+              >
+                Dashboard
+              </Button>
+
+              <Button
+                type="text"
+                icon={<BarChartOutlined />}
+                size="large"
+                block
+                style={{ 
+                  textAlign: 'left',
+                  borderRadius: '8px',
+                  height: '48px'
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Analytics
+              </Button>
+
+              {isDeveloper && (
+                <Button
+                  type="text"
+                  icon={<ExperimentOutlined />}
+                  size="large"
+                  block
+                  style={{ 
+                    textAlign: 'left',
+                    borderRadius: '8px',
+                    height: '48px'
+                  }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.location.href = '/test-api';
+                  }}
+                >
+                  API Lab
+                </Button>
+              )}
+            </Space>
+
+            {/* Mobile Actions */}
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Button
+                type="text"
+                icon={<BellOutlined />}
+                size="large"
+                block
+                style={{ 
+                  textAlign: 'left',
+                  borderRadius: '8px',
+                  height: '48px'
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Notifications
+              </Button>
+
+              <Button
+                type="text"
+                icon={<SettingOutlined />}
+                size="large"
+                block
+                style={{ 
+                  textAlign: 'left',
+                  borderRadius: '8px',
+                  height: '48px'
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Settings
+              </Button>
+            </Space>
+          </Space>
+        </Drawer>
+
+        <Content 
+          className="scrollable-content"
+          style={{
+            backgroundColor: isDark ? '#000' : '#fafafa',
+            height: 'calc(100vh - 70px)',
+            maxHeight: 'calc(100vh - 70px)',
+            padding: 'clamp(8px, 4vw, 16px)',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            flex: 1
+          }}>
           {children}
         </Content>
     </AntLayout>

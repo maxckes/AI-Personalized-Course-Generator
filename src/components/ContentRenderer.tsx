@@ -82,16 +82,33 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
   };
 
     return (
-    <Space direction="vertical" size="middle">
+    <div style={{ 
+      height: '100%', 
+      maxHeight: '100%',
+      width: '100%',
+      maxWidth: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       {/* Compact Module Header with Theme Toggle */}
       <Card
         style={{
           background: isDark ? '#1a1a1a' : `linear-gradient(135deg, ${getModuleColor() === 'blue' ? '#e6f7ff' : getModuleColor() === 'red' ? '#fff2f0' : getModuleColor() === 'green' ? '#f6ffed' : '#fafafa'} 0%, #ffffff 100%)`,
           borderColor: localCompleted ? '#52c41a' : (getModuleColor() === 'blue' ? '#1c7ed6' : getModuleColor() === 'red' ? '#ff4d4f' : getModuleColor() === 'green' ? '#52c41a' : '#d9d9d9'),
+          width: '100%',
+          flexShrink: 0,
+          marginBottom: '16px'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Space align="center">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <Space align="center" style={{ flex: 1, minWidth: '200px' }}>
             <div style={{
               padding: '8px',
               borderRadius: '50%',
@@ -121,10 +138,11 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
               <Title
                 level={2}
                 style={{
-                  fontSize: '1.5rem',
+                  fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
                   fontWeight: 600,
                   color: isDark ? 'white' : 'black',
-                  margin: 0
+                  margin: 0,
+                  lineHeight: 1.3
                 }}
               >
                 {module.title}
@@ -132,7 +150,7 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
             </Space>
           </Space>
 
-          <Space>
+          <Space style={{ flexShrink: 0 }}>
             <ThemeToggle />
             <Button
               type={localCompleted ? "default" : "primary"}
@@ -140,10 +158,13 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
               onClick={handleToggleComplete}
               style={{
                 backgroundColor: localCompleted ? '#52c41a' : undefined,
-                borderColor: localCompleted ? '#52c41a' : undefined
+                borderColor: localCompleted ? '#52c41a' : undefined,
+                fontSize: 'clamp(12px, 2.5vw, 14px)'
               }}
+              size="middle"
             >
-              {localCompleted ? "✅ Done" : "Complete"}
+              <span className="hide-text-mobile">{localCompleted ? "✅ Done" : "Complete"}</span>
+              <span className="show-text-mobile" style={{ display: 'none' }}>{localCompleted ? "✅" : "⏱"}</span>
             </Button>
           </Space>
         </div>
@@ -151,13 +172,20 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
 
       {/* Streamlined Content Area */}
       <div
+        className="scrollable-content content-text"
         style={{
-          minHeight: '50vh',
+          flex: 1,
+          height: '100%',
+          maxHeight: '100%',
           background: isDark
             ? 'rgba(31, 41, 55, 0.3)'
             : 'rgba(249, 250, 251, 0.5)',
           borderRadius: '8px',
-          padding: '16px'
+          padding: 'clamp(12px, 3vw, 16px)',
+          width: '100%',
+          boxSizing: 'border-box',
+          overflowY: 'scroll',
+          overflowX: 'hidden'
         }}
       >
         {module.contentType === 'READING' && (
@@ -172,7 +200,7 @@ export function ContentRenderer({ module, onComplete, isCompleted }: ContentRend
           <QuizContent content={module.content} />
         )}
       </div>
-    </Space>
+    </div>
   );
 }
 
@@ -355,9 +383,10 @@ function ReadingContent({ content }: { content: unknown }) {
         )}
 
         {/* Optimized Blog Content */}
-        <div>
+        <div className="reading-content">
           <div
             ref={contentRef}
+            className="content-text"
             style={{
               lineHeight: 1.6,
               fontSize: '16px',
@@ -365,6 +394,7 @@ function ReadingContent({ content }: { content: unknown }) {
               textAlign: 'justify',
               textJustify: 'inter-word',
               hyphens: 'auto',
+              wordSpacing: '0.1em'
             }}
             dangerouslySetInnerHTML={{
               __html: blogContent.blogContent
